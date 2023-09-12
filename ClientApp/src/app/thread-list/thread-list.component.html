@@ -1,0 +1,13 @@
+<table>
+	<tr>
+		<th>Topic</th>
+		<th>Date</th>
+		<th>Posts</th>
+	</tr>
+	<style>td {outline: solid black 1px;}</style>
+	<tr *ngFor="let thread of threads">
+		<td><a class="nav-link text-dark" [routerLink]="['/thread', thread.threadID]">{{thread.topic}}</a></td>
+		<td>{{thread.date}}</td>
+		<td>{{thread.posts?.length}}</td>
+	</tr>
+</table>

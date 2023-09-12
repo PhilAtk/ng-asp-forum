@@ -1,0 +1,16 @@
+
+<div *ngIf="_loggedIn; else noLogin">
+	<h1>Hello, <a [routerLink]="['/user', user.userID]">{{user.userName}}</a></h1>
+	<button (click)="logout()">Logout</button>
+</div>
+
+<ng-template #noLogin>
+	<label for="username">User: </label>
+	<input id="username" [(ngModel)]="data.username"><br>
+	<label for="password">Password: </label>
+	<input id="password" type="password" [(ngModel)]="data.password"><br>
+	<button (click)="sendLogin()">Login</button>
+	<a class="nav-link text-dark" [routerLink]="['/register']">Register</a>
+	<a class="nav-link text-dark" [routerLink]="['/forgot']">Forgot Password?</a>
+</ng-template>
+

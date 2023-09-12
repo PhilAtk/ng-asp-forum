@@ -1,0 +1,22 @@
+<div>
+	<span><a [routerLink]="['/user', post.author.userID]">{{post.author.userName}}</a> | #{{post.postID}} | {{post.date}}</span>	
+
+	<span *ngIf="_canEdit && !_editMode">
+		<button (click)="editPost()">Edit</button>
+		<button (click)="deletePost()">Delete</button>
+	</span>
+</div>
+
+
+<div *ngIf="_editMode; else readMode">
+	<input type="text" [(ngModel)]="editBuffer">
+	<button (click)="savePost()">Save</button>
+	<button (click)="cancelEdit()">Cancel</button>
+</div>
+
+<ng-template #readMode>
+	<div>
+		<span>{{post.text}}</span>
+	</div>
+</ng-template>
+

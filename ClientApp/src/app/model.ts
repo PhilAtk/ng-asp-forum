@@ -1,0 +1,61 @@
+export interface LoginResult {
+	userID: number,
+	userRole: userRole,
+	userName: string,
+	userState: userState,
+	token: string
+}
+
+export interface Post {
+	postID: number,
+	thread: Thread,
+	author: User,
+	date: number,
+	text: string
+}
+
+export interface Thread {
+	threadID: number,
+	author: User,
+	date: number,
+	topic: string,
+	posts?: Post[]
+}
+
+export enum userRole {
+	USER,
+	VIP,
+	ADMIN,
+	SYSOP
+}
+
+export const roleMap = new Map<userRole, string>([
+	[userRole.USER, userRole[userRole.USER]],
+	[userRole.VIP, userRole[userRole.VIP]],
+	[userRole.ADMIN, userRole[userRole.ADMIN]],
+	[userRole.SYSOP, userRole[userRole.SYSOP]],
+])
+
+export enum userState {
+	LOGOUT = -3,
+	BANNED = -2,
+	DISABLED = -1,
+	AWAIT_REG = 0,
+	ACTIVE,
+}
+
+// TODO: Maybe allow setting state to logout? Force logout of all active sessions?
+export const stateMap = new Map<userState, string>([
+	[userState.BANNED, userState[userState.BANNED]],
+	[userState.DISABLED, userState[userState.DISABLED]],
+	[userState.AWAIT_REG, userState[userState.AWAIT_REG]],
+	[userState.ACTIVE, userState[userState.ACTIVE]]
+])
+
+export interface User {
+	userID: number,
+	userName: string,
+	userState: userState,
+	userRole: userRole,
+	bio: string
+}

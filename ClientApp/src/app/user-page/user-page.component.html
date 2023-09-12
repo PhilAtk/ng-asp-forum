@@ -1,0 +1,17 @@
+<h1>{{_user.userName}}</h1>
+
+<div *ngIf="_editMode; else readMode">
+	<input type="text" [(ngModel)]="editBuffer">
+	<button (click)="saveBio()">Save</button>
+	<button (click)="cancelEdit()">Cancel</button>
+</div>
+
+<ng-template #readMode>
+        <span *ngIf="_canEdit">
+                <button (click)="editBio()">Edit</button>
+        </span>
+        <div>
+                <p>{{_user.bio}}</p>
+        </div>
+</ng-template>
+

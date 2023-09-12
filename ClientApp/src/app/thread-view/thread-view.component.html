@@ -1,0 +1,24 @@
+<div *ngIf="_editMode; else readMode">
+	<input type="text" [(ngModel)]="editBuffer">
+	<button (click)="saveThread()">Save</button>
+	<button (click)="cancelEdit()">Cancel</button>
+</div>
+
+<ng-template #readMode>
+	<h1>{{thread.topic}}</h1>
+</ng-template>
+
+<span *ngIf="_canEdit && !_editMode">
+	<button (click)="editThread()">Edit</button>
+	<button (click)="deleteThread()">Delete</button>
+</span>
+<h4>by {{thread.author.userName}} on {{thread.date}}</h4>
+
+<table>
+	<style>tr {outline: solid black 1px;}</style>
+	<tr *ngFor="let post of thread.posts">
+		<app-post [post]="post"></app-post>
+	</tr>
+</table>
+
+<app-post-maker></app-post-maker>
