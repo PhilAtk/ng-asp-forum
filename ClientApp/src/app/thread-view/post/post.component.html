@@ -1,5 +1,5 @@
 <div>
-	<span><a [routerLink]="['/user', post.author.userID]">{{post.author.userName}}</a> | #{{post.postID}} | {{post.date}}</span>	
+	<span id="{{post.postID}}"><a [routerLink]="['/user', post.author.userID]">{{post.author.userName}}</a> | <a [routerLink]="'.'" fragment="{{post.postID}}">#{{post.postID}}</a> | {{post.date}}</span>	
 
 	<span *ngIf="_canEdit && !_editMode">
 		<button (click)="editPost()">Edit</button>

@@ -52,7 +52,10 @@ import { UserListComponent } from './user-list/user-list.component';
       { path: 'userlist', component: UserListComponent},
       { path: 'reset/:token', component: ResetPageComponent },
       { path: 'forgot', component: ForgotPageComponent }
-    ])
+    ], {
+      anchorScrolling: 'enabled',
+      onSameUrlNavigation: 'ignore'
+    })
   ],
   providers: [],
   bootstrap: [AppComponent]
