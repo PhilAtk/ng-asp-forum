@@ -72,7 +72,7 @@ public class RegisterController : ControllerBase {
 		}
 
 		catch (Exception e) {
-			Console.WriteLine(e.Message);
+			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}
 	}
@@ -106,7 +106,7 @@ public class RegisterController : ControllerBase {
 				return Ok();	
 			}
 			catch (Exception e) {
-				_logger.LogWarning(e.Message);
+				_logger.LogError(e.Message);
 				return StatusCode(500);
 			}
 		}

@@ -169,7 +169,7 @@ public class PostController : ControllerBase {
 		}
 
 		catch (Exception e) {
-			Console.WriteLine(e.Message);
+			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}
 	}

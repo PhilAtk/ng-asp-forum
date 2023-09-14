@@ -26,8 +26,7 @@ public class UserController : ControllerBase {
 			return Ok(list.ToArray());
 		}
 		catch (Exception e) {
-			// TODO: Log this instead
-			Console.WriteLine(e.Message);
+			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}
 	}

@@ -37,14 +37,12 @@ export const roleMap = new Map<userRole, string>([
 ])
 
 export enum userState {
-	LOGOUT = -3,
 	BANNED = -2,
 	DISABLED = -1,
 	AWAIT_REG = 0,
 	ACTIVE,
 }
 
-// TODO: Maybe allow setting state to logout? Force logout of all active sessions?
 export const stateMap = new Map<userState, string>([
 	[userState.BANNED, userState[userState.BANNED]],
 	[userState.DISABLED, userState[userState.DISABLED]],

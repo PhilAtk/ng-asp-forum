@@ -20,6 +20,7 @@ public class ForumContext : DbContext
 		DbPath = Path.Join(path, "forum.db");
 	}
 
+	// TODO: Add MySQL option
 	protected override void OnConfiguring(DbContextOptionsBuilder options)
 		=> options.UseSqlite($"Data Source={DbPath}");
 }
@@ -64,6 +65,7 @@ public enum userRole {
 	SYSOP
 }
 
+// TODO: Separate Account and Profile information
 public class ForumUser {
 	[Key]
 	public int userID {get; set;}

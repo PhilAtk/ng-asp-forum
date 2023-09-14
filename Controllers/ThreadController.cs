@@ -11,12 +11,14 @@ public class ThreadController : ControllerBase {
 	private readonly ILogger<ThreadController> _logger;
 	private ForumContext _db;
 	private ForumAuthenticator _auth;
-	private string _baseURL = "https://localhost:44406/"; // TODO: Programmatically load this
+	private string _baseURL;
 
 	public ThreadController(ILogger<ThreadController> logger, ForumContext db, ForumAuthenticator auth) {
 		_logger = logger;
 		_db = db;
 		_auth = auth;
+
+		_baseURL = HttpContext.Request.Scheme + "://" + HttpContext.Request.Host + '/';
 	}
 
 	public class ThreadCreateData {
@@ -40,8 +42,7 @@ public class ThreadController : ControllerBase {
 			return Ok(list.ToArray());
 		}
 		catch (Exception e) {
-			// TODO: Log this instead
-			Console.WriteLine(e.Message);
+			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}
 	}
@@ -58,7 +59,7 @@ public class ThreadController : ControllerBase {
 				.First();
 
 			if (thread == null) {
-				Console.WriteLine("No thread found for ID: %d", id);
+				_logger.LogTrace("No thread found for ID: %d", id);
 				return NotFound();
 			}
 
@@ -66,7 +67,7 @@ public class ThreadController : ControllerBase {
 		}
 		
 		catch (Exception e) {
-			Console.WriteLine(e.Message);
+			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}
 
@@ -216,7 +217,7 @@ public class ThreadController : ControllerBase {
 			return Created(_baseURL + "thread/" + thread.threadID, thread);
 		}
 		catch (Exception e) {
-			Console.WriteLine(e.Message);
+			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}
 	} 
