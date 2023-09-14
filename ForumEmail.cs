@@ -49,10 +49,6 @@ public class ForumEmail {
 
 	public void sendPasswordReset(string to, string token) {
 
-		var urlenc = UrlEncoder.Create();
-
-		urlenc.Encode(token);
-
 		var message = new MailMessage{
 			From = _from,
 			Subject = "Password Reset",
