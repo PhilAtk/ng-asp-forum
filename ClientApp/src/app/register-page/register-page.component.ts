@@ -37,6 +37,9 @@ export class RegisterPageComponent {
 		this._http.post<RegisterData>(this._baseUrl + '	api/register/request', this.data).subscribe({
 			next: () => {
 				window.alert("Registered user: " + this.data.username);
+				// TODO: Redirect to confirmation page
+				window.location.href = this._baseUrl;
+				
 			},
 			error: (e) => { window.alert("Couldn't register user: " + e);}
 		});
