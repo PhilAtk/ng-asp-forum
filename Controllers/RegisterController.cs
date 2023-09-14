@@ -55,18 +55,22 @@ public class RegisterController : ControllerBase {
 
 			var hashedPass = _auth.Hash(data.password);
 			
+			var regCode = _auth.GetRandom6charCode();
+
 			var user = new ForumUser{
 				userName = data.username,
 				password = hashedPass,
 				email = data.email,
 				userState = userState.AWAIT_REG,
-				userRole = userRole.USER};
+				userRole = userRole.USER,
+				code = regCode
+			};
 
 			_db.Add(user);
 			_db.SaveChanges();
 
-			var token = _auth.GenerateRegisterToken(user.userID);
-			_email.sendRegistrationConfirmation(user.email, token);
+			//var token = _auth.GenerateRegisterToken(user.userID);
+			_email.sendRegistrationConfirmation(user.email, regCode);
 
 			return Ok();
 		}
@@ -89,28 +93,24 @@ public class RegisterController : ControllerBase {
 			return BadRequest("No token provided for validation");
 		}
 
-		int userID = 0;
+		try {
+			var user = _db.Users.Where(u => u.code == data.token).First();
 
-		if (_auth.VerifyRegisterToken(data.token, out userID)) {
-			try {
-				var user = _db.Users.Where(u => u.userID == userID).First();
-
-				if (user.userState != userState.AWAIT_REG) {
-					// We shouldn't be here
-					return BadRequest();
-				}
-
-				user.userState = userState.ACTIVE;
-				_db.Update(user);
-				_db.SaveChanges();
-				return Ok();	
+			if (user.userState != userState.AWAIT_REG) {
+				// We shouldn't be here
+				return BadRequest();
 			}
-			catch (Exception e) {
-				_logger.LogError(e.Message);
-				return StatusCode(500);
-			}
+
+			user.userState = userState.ACTIVE;
+			user.code = null;
+
+			_db.Update(user);
+			_db.SaveChanges();
+			return Ok();	
 		}
-
-		return Unauthorized("Invalid token for registration confirmation");
+		catch (Exception e) {
+			_logger.LogError(e.Message);
+			return StatusCode(500);
+		}
 	}
 }

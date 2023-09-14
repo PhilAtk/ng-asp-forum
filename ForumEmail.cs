@@ -67,7 +67,10 @@ public class ForumEmail {
 			From = _from,
 			Subject = "Confirm Registration",
 			IsBodyHtml = true,
-			Body = "<p>An account was created with your email. To confirm this reigstration, go here: " + _regConfURL + token + "</p>"
+			Body = 
+			@"<p>An account was created with your email.</p><br>
+			<p>Your Registration code is: " + token + @"</p><br>
+			<p>To confirm this reigstration, go here: " + _regConfURL + token + "</p>"
 		};
 
 		message.To.Add(to);

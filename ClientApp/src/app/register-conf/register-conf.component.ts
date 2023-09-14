@@ -32,7 +32,7 @@ export class RegisterConfComponent {
 		}
 	}
 
-	sendConfirmation() {
+	public sendConfirmation() {
 		this._http.post<RegisterConfData>(this._baseUrl + URL_API_REG_CONF, this.data).subscribe({
 			next: () => {
 				window.alert("Registration Complete. Please proceed to user login");

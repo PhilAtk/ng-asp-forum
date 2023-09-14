@@ -78,6 +78,9 @@ public class ForumUser {
 	[JsonIgnore]
 	public string? email {get; set;}
 
+	[JsonIgnore]
+	public string? code {get; set;}
+
 	public userState userState {get; set;}
 	public userRole userRole {get; set;}
 

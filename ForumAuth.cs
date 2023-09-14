@@ -20,8 +20,6 @@ public class ForumAuthenticator {
 	private readonly string _issuer;
 	private readonly string _audience;
 
-
-
 	public ForumAuthenticator(IConfiguration config) {
 		var audience = config["AUTH_AUDIENCE"];
 		var issuer = config["AUTH_ISSUER"];
@@ -43,6 +41,14 @@ public class ForumAuthenticator {
 		securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
 	}
 
+	public string GetRandom6charCode()
+	{
+		string path = Path.GetRandomFileName();
+		path = path.Replace(".", ""); 
+
+		return path.Substring(0, 6);
+	}
+
 	public string GenerateBearerToken(int userID) {
 
 		var handler = new JwtSecurityTokenHandler();
@@ -53,7 +59,7 @@ public class ForumAuthenticator {
 				new Claim(ClaimTypes.NameIdentifier, userID.ToString())
 			}),
 			Expires = DateTime.UtcNow.AddDays(7),
-			Issuer = _issuer,	
+			Issuer = _issuer,
 			Audience = _audience,
 			SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
 		};
@@ -112,6 +118,7 @@ public class ForumAuthenticator {
 		return handler.WriteToken(token);
 	}
 
+	// TODO: Change to use same method as Register confirmation
 	public bool VerifyResetToken(string token, out int userID) {
 
 		var handler = new JwtSecurityTokenHandler();
@@ -147,60 +154,6 @@ public class ForumAuthenticator {
 		}
 	}
 
-	public string GenerateRegisterToken(int userID) {
-
-		var handler = new JwtSecurityTokenHandler();
-
-		var descriptor = new SecurityTokenDescriptor(){
-			Subject = new ClaimsIdentity(new Claim[]{
-				new Claim(ClaimTypes.NameIdentifier, userID.ToString()),
-				new Claim(REGISTER, REGISTER)
-			}),
-			Expires = DateTime.UtcNow.AddMinutes(10),
-			Issuer = _issuer,
-			Audience = _audience,
-			SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
-		};
-
-		var token = handler.CreateToken(descriptor);
-
-		return handler.WriteToken(token);
-	}
-
-	public bool VerifyRegisterToken(string token, out int userID) {
-
-		var handler = new JwtSecurityTokenHandler();
-
-		SecurityToken validatedToken;
-		try {
-			var thing = handler.ValidateToken(token, new TokenValidationParameters(){
-				ValidateIssuerSigningKey = true,
-				IssuerSigningKey = securityKey,
-
-				ValidateIssuer = true,
-				ValidIssuer = _issuer,
-
-				ValidateAudience = true, 
-				ValidAudience = _audience
-			}, out validatedToken);
-
-			var tokenUserID = int.Parse(thing.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-			var tokenRegister = thing.Claims.First(c => c.Type == REGISTER).Value;
-
-			if (tokenRegister != REGISTER) {
-				userID = 0;
-				return false;
-			}
-
-			userID = tokenUserID;
-
-			return true;
-		}
-		catch {
-			userID = 0;
-			return false;
-		}		
-	}
 
 	public string Hash(string input) {
 		byte[] salt = RandomNumberGenerator.GetBytes(_saltSize);
