@@ -11,14 +11,11 @@ public class ThreadController : ControllerBase {
 	private readonly ILogger<ThreadController> _logger;
 	private ForumContext _db;
 	private ForumAuthenticator _auth;
-	private string _baseURL;
 
 	public ThreadController(ILogger<ThreadController> logger, ForumContext db, ForumAuthenticator auth) {
 		_logger = logger;
 		_db = db;
 		_auth = auth;
-
-		_baseURL = HttpContext.Request.Scheme + "://" + HttpContext.Request.Host + '/';
 	}
 
 	public class ThreadCreateData {
@@ -214,7 +211,9 @@ public class ThreadController : ControllerBase {
 			_db.Add(thread);
 			_db.SaveChanges();
 			
-			return Created(_baseURL + "thread/" + thread.threadID, thread);
+			var baseURL = Request.Scheme + "://" + Request.Host + '/';
+
+			return Created(baseURL + "thread/" + thread.threadID, thread);
 		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);
