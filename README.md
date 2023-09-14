@@ -10,12 +10,12 @@ At the time of writing it is NOT recommended to be used as an actual forum. It i
 ## Configuration
 Before attempting to run, the following environment variables must be set:
 ```
-    email:username # username for an SMTP server
-    email:password # password for an SMTP server
-    email:mailServer # the SMTP server to use
-    auth:issuer # Issuer for Auth Tokens
-    auth:audience # Audience for Auth Tokens
-    auth:secret # Secret for encryption
+    EMAIL_USERNAME # username for an SMTP server
+    EMAIL_PASSWORD # password for an SMTP server
+    EMAIL_SERVER # the SMTP server to use
+    AUTH_ISSUER # Issuer for Auth Tokens
+    AUTH_AUDIENCE # Audience for Auth Tokens
+    AUTH_SECRET # Secret for encryption
 ```
 
 ## Building and Hosting

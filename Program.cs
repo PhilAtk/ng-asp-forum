@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,11 +9,20 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddTransient<ForumContext>();
 builder.Services.AddTransient<ForumAuthenticator>();
 builder.Services.AddTransient<ForumEmail>();
 
 var app = builder.Build();
+
+// Make sure the database is created and updated
+using (var scope = app.Services.CreateScope())
+{
+    var forumContext = scope.ServiceProvider.GetRequiredService<ForumContext>();
+    forumContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

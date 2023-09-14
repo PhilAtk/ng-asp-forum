@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Mail;
+using System.Text.Encodings.Web;
 
 public class ForumEmail {
 	private readonly ILogger<ForumEmail> _logger;
-	private readonly IConfiguration _config;
 
 	SmtpClient _smtp;
 	MailAddress _from;
@@ -12,26 +12,29 @@ public class ForumEmail {
 	string _resetURL;
 	string _regConfURL;
 
-	public ForumEmail(ILogger<ForumEmail> logger, IConfiguration config) {
+	public ForumEmail(ILogger<ForumEmail> logger, IConfiguration config, IHttpContextAccessor httpContextAccessor) {
 		_logger = logger;
-		_config = config;
 
-		_baseURL = "https://localhost:44406/"; // TODO: Programmatically load this
+		if (httpContextAccessor.HttpContext == null) {
+			throw new Exception("Couldn't get HTTP Context for ForumEmail");
+		}
+
+		_baseURL = httpContextAccessor.HttpContext.Request.Scheme + "://" + httpContextAccessor.HttpContext.Request.Host + '/';
 		_resetURL = _baseURL + "reset/";
 		_regConfURL = _baseURL + "register/confirm/";
 
-		var emailPass = _config["email:password"];
-		var emailUser = _config["email:username"];
-		var mailserver = _config["email:mailServer"];
+		var emailPass = config["EMAIL_PASSWORD"];
+		var emailUser = config["EMAIL_USERNAME"];
+		var mailserver = config["EMAIL_SERVER"];
 
 		if (string.IsNullOrWhiteSpace(emailUser)) {
-			throw new Exception("No email user provided for authentication. Please set 'email:username'");
+			throw new Exception("No email user provided for authentication. Please set 'EMAIL_USERNAME'");
 		}
 		if (string.IsNullOrWhiteSpace(emailPass)) {
-			throw new Exception("No email password provided for authentication. Please set 'email:password'");
+			throw new Exception("No email password provided for authentication. Please set 'EMAIL_PASSWORD'");
 		}
 		if (string.IsNullOrWhiteSpace(mailserver)) {
-			throw new Exception("No mailserver provided. Please set 'email:mailServer'");
+			throw new Exception("No mailserver provided. Please set 'EMAIL_SERVER'");
 		}
 
 		_from = new MailAddress(emailUser);
@@ -41,10 +44,14 @@ public class ForumEmail {
 			Port = 587,
 			Credentials = new NetworkCredential(emailUser, emailPass)
 		};
-    }
+    	}
 
 
 	public void sendPasswordReset(string to, string token) {
+
+		var urlenc = UrlEncoder.Create();
+
+		urlenc.Encode(token);
 
 		var message = new MailMessage{
 			From = _from,

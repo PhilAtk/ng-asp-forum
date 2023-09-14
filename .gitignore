@@ -184,6 +184,9 @@ orleans.codegen.cs
 
 /node_modules
 
+# Angular build artifacts
+ClientApp/.angular
+
 # RIA/Silverlight projects
 Generated_Code/
 

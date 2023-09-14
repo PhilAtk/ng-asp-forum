@@ -23,22 +23,22 @@ public class ForumAuthenticator {
 
 
 	public ForumAuthenticator(IConfiguration config) {
-		var audience = config["auth:audience"];
-		var issuer = config["auth:issuer"];
-		var secret = config["auth:secret"];
+		var audience = config["AUTH_AUDIENCE"];
+		var issuer = config["AUTH_ISSUER"];
+		var secret = config["AUTH_SECRET"];
 
 		if (string.IsNullOrWhiteSpace(audience)) {
-			throw new Exception("No audience provided for authentication. Please set 'auth:audience'");
+			throw new Exception("No audience provided for authentication. Please set 'AUTH_AUDIENCE'");
 		}
 		_audience = audience;
 
 		if (string.IsNullOrWhiteSpace(issuer)) {
-			throw new Exception("No issuer provided for authentication. Please set 'auth:issuer'");
+			throw new Exception("No issuer provided for authentication. Please set 'AUTH_ISSUER'");
 		}
 		_issuer = issuer;
 
 		if (string.IsNullOrWhiteSpace(secret)) {
-			throw new Exception("No secret provided for authentication. Please set 'auth:secret'");
+			throw new Exception("No secret provided for authentication. Please set 'AUTH_SECRET'");
 		}
 		securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
 	}
@@ -96,16 +96,15 @@ public class ForumAuthenticator {
 
 		var handler = new JwtSecurityTokenHandler();
 
-		// TODO: Generate a sessionID, save into Database, include in token
 		var descriptor = new SecurityTokenDescriptor(){
 			Subject = new ClaimsIdentity(new Claim[]{
 				new Claim(ClaimTypes.NameIdentifier, userID.ToString()),
 				new Claim(PASS_RESET, PASS_RESET)
 			}),
 			Expires = DateTime.UtcNow.AddMinutes(10),
-			Issuer = this._issuer,
-			Audience = this._audience,
-			SigningCredentials = new SigningCredentials(this.securityKey, SecurityAlgorithms.HmacSha256Signature)
+			Issuer = _issuer,
+			Audience = _audience,
+			SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
 		};
 
 		var token = handler.CreateToken(descriptor);
@@ -121,13 +120,13 @@ public class ForumAuthenticator {
 		try {
 			var thing = handler.ValidateToken(token, new TokenValidationParameters(){
 				ValidateIssuerSigningKey = true,
-				IssuerSigningKey = this.securityKey,
+				IssuerSigningKey = securityKey,
 
 				ValidateIssuer = true,
-				ValidIssuer = this._issuer,
+				ValidIssuer = _issuer,
 
 				ValidateAudience = true, 
-				ValidAudience = this._audience
+				ValidAudience = _audience
 			}, out validatedToken);
 
 			var tokenUserID = int.Parse(thing.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
@@ -145,23 +144,22 @@ public class ForumAuthenticator {
 		catch {
 			userID = 0;
 			return false;
-		}		
+		}
 	}
 
 	public string GenerateRegisterToken(int userID) {
 
 		var handler = new JwtSecurityTokenHandler();
 
-		// TODO: Generate a sessionID, save into Database, include in token
 		var descriptor = new SecurityTokenDescriptor(){
 			Subject = new ClaimsIdentity(new Claim[]{
 				new Claim(ClaimTypes.NameIdentifier, userID.ToString()),
 				new Claim(REGISTER, REGISTER)
 			}),
 			Expires = DateTime.UtcNow.AddMinutes(10),
-			Issuer = this._issuer,
-			Audience = this._audience,
-			SigningCredentials = new SigningCredentials(this.securityKey, SecurityAlgorithms.HmacSha256Signature)
+			Issuer = _issuer,
+			Audience = _audience,
+			SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
 		};
 
 		var token = handler.CreateToken(descriptor);
@@ -177,19 +175,19 @@ public class ForumAuthenticator {
 		try {
 			var thing = handler.ValidateToken(token, new TokenValidationParameters(){
 				ValidateIssuerSigningKey = true,
-				IssuerSigningKey = this.securityKey,
+				IssuerSigningKey = securityKey,
 
 				ValidateIssuer = true,
-				ValidIssuer = this._issuer,
+				ValidIssuer = _issuer,
 
 				ValidateAudience = true, 
-				ValidAudience = this._audience
+				ValidAudience = _audience
 			}, out validatedToken);
 
 			var tokenUserID = int.Parse(thing.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-			var tokenPassReset = thing.Claims.First(c => c.Type == REGISTER).Value;
+			var tokenRegister = thing.Claims.First(c => c.Type == REGISTER).Value;
 
-			if (tokenPassReset != REGISTER) {
+			if (tokenRegister != REGISTER) {
 				userID = 0;
 				return false;
 			}
