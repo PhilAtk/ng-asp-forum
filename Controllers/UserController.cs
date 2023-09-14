@@ -18,7 +18,6 @@ public class UserController : ControllerBase {
 	}
 
 	[HttpGet]
-	[Route("list")]
 	public ActionResult<IEnumerable<ForumUser>> GetUserList() {
 		try {
 			// TODO: Make sure we don't spill any info we shouldn't

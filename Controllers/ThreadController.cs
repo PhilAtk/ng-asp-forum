@@ -51,11 +51,11 @@ public class ThreadController : ControllerBase {
 	public ActionResult<ForumThread> GetThread(int id) {
 		try {
 			var thread = _db.Threads
-				.Where(t => t.threadID == id)
-				.Include(t => t.posts)
+                		.Where(t => t.threadID == id)
 				.Include(t => t.author)
+				.Include(t => t.posts)
+				.ThenInclude(p => p.author)
 				.First();
-				
 
 			if (thread == null) {
 				Console.WriteLine("No thread found for ID: %d", id);

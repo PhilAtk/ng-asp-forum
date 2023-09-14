@@ -28,7 +28,7 @@ export class UserListComponent {
 	}
 
 	ngOnInit() {
-		this._http.get<User[]>(this._baseUrl + 'api/user/list').subscribe({
+		this._http.get<User[]>(this._baseUrl + 'api/user').subscribe({
 			next: (users) => this.users = users,
 			error: (e) => { console.log(e); this.users = []}
 		});

@@ -28,13 +28,13 @@ public class ForumThread {
 	[Key]
 	public int threadID {get; set;}
 
-	public ForumUser? author {get; set;}
+	public ForumUser author {get; set;}
 
 	public DateTime date {get; set;}
 
 	public string? topic {get; set;}
 
-	public ICollection<ForumPost>? posts {get; set;}
+	public ICollection<ForumPost> posts {get; set;}
 }
 
 public class ForumPost {
