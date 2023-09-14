@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { CookieService } from '../cookie.service';
+import { URL_API_REG_REQ } from '../urls';
 
 interface RegisterData {
 	username: string;
@@ -34,11 +35,11 @@ export class RegisterPageComponent {
 			return;
 		}
 
-		this._http.post<RegisterData>(this._baseUrl + '	api/register/request', this.data).subscribe({
+		this._http.post<RegisterData>(this._baseUrl + URL_API_REG_REQ, this.data).subscribe({
 			next: () => {
 				window.alert("Registered user: " + this.data.username);
 				// TODO: Redirect to confirmation page
-				window.location.href = this._baseUrl;
+				window.location.href = this._baseUrl + "/";
 				
 			},
 			error: (e) => { window.alert("Couldn't register user: " + e);}

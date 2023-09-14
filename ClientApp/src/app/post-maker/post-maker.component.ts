@@ -3,6 +3,7 @@ import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CookieService } from '../cookie.service';
 import { userRole, userState } from '../model';
+import { URL_API_POST } from '../urls';
 
 interface PostCreateData {
 	threadID: number;
@@ -41,7 +42,7 @@ export class PostMakerComponent {
 	}
 
 	public sendPost() {	
-		this._http.post<PostCreateData>(this._baseUrl + 'api/post', this.data).subscribe({
+		this._http.post<PostCreateData>(this._baseUrl + URL_API_POST, this.data).subscribe({
 			next: () => {location.reload();},
 			error: (e) => { window.alert("Couldn't create post");}
 		});

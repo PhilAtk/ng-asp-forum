@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { URL_API_PASS_RESET } from '../urls';
 
 interface ResetData {
 	password: string;
@@ -35,7 +36,7 @@ export class ResetPageComponent {
 			return;
 		}
 
-		this._http.post<ResetData>(this._baseUrl + 'api/password/reset', this.data).subscribe({
+		this._http.post<ResetData>(this._baseUrl + URL_API_PASS_RESET, this.data).subscribe({
 			next: () => {
 				window.alert("Successfully Reset Password");
 				window.location.href = this._baseUrl;

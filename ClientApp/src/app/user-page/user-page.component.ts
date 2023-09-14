@@ -3,6 +3,7 @@ import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { User, userRole } from '../model';
 import { CookieService } from '../cookie.service';
+import { URL_API_USER } from '../urls';
 
 interface UserEditData {
 	bio: string,
@@ -38,7 +39,7 @@ export class UserPageComponent {
 	}
 
 	ngOnInit() {
-		this._http.get<User>(this._baseUrl + 'api/user/' + this._user.userID).subscribe({
+		this._http.get<User>(this._baseUrl + URL_API_USER + this._user.userID).subscribe({
 			next: (u) => {
 				this._user = u;
 				if (this._cookieService.getUserID() == this._user.userID || this._cookieService.getUserRole() >= userRole.ADMIN) {
@@ -64,7 +65,7 @@ export class UserPageComponent {
 			bio: this.editBuffer
 		} as UserEditData;
 
-		this._http.patch(this._baseUrl + 'api/user/' + this._user.userID, data).subscribe({
+		this._http.patch(this._baseUrl + URL_API_USER + this._user.userID, data).subscribe({
 			next: () => {location.reload();},
 			error: (e) => {window.alert("Couldn't edit user profile");}
 		});

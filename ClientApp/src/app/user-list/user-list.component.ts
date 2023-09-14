@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { User, roleMap, stateMap, userRole, userState } from '../model';
+import { URL_API_USERLIST, URL_API_USER_ADMIN } from '../urls';
 
 interface AdminUserEditData {
 	role: userRole;
@@ -28,7 +29,7 @@ export class UserListComponent {
 	}
 
 	ngOnInit() {
-		this._http.get<User[]>(this._baseUrl + 'api/user').subscribe({
+		this._http.get<User[]>(this._baseUrl + URL_API_USERLIST).subscribe({
 			next: (users) => this.users = users,
 			error: (e) => { console.log(e); this.users = []}
 		});
@@ -42,7 +43,7 @@ export class UserListComponent {
 			state: Number(user.userState),
 		} as AdminUserEditData;
 
-		this._http.patch(this._baseUrl + 'api/user/admin/' + user.userID, data).subscribe({
+		this._http.patch(this._baseUrl + URL_API_USER_ADMIN + user.userID, data).subscribe({
 			next: () => {
 				window.alert("User " + user.userName + " successfully updated");
 				location.reload();

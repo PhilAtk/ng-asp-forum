@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { CookieService } from '../cookie.service';
 import { LoginResult, User } from '../model';
+import { URL_API_LOGIN } from '../urls';
 
 interface LoginData {
 	username: string;
@@ -43,7 +44,7 @@ export class LoginBoxComponent {
 	}
 
 	public sendLogin() {
-		this._http.post<LoginResult>(this._baseUrl + 'api/login', this.data).subscribe({
+		this._http.post<LoginResult>(this._baseUrl + URL_API_LOGIN, this.data).subscribe({
 			next: (res) => {
 				this._cookieService.setLogin(res);
 			},

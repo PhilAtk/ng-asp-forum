@@ -3,6 +3,7 @@ import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Thread, userRole } from 'src/app/model';
 import { CookieService } from '../cookie.service';
+import { URL_API_THREAD } from '../urls';
 
 interface ThreadEditData {
 	topic: string,
@@ -41,7 +42,7 @@ export class ThreadViewComponent {
 	}
 
 	ngOnInit() {
-		this._http.get<Thread>(this._baseUrl + 'api/thread/' + this.thread.threadID).subscribe({
+		this._http.get<Thread>(this._baseUrl + URL_API_THREAD + this.thread.threadID).subscribe({
 			next: (t) => {
 				this.thread = t;
 				if (this._cookieService.getUserID() == this.thread.author.userID || this._cookieService.getUserRole() >= userRole.ADMIN) {
@@ -58,7 +59,7 @@ export class ThreadViewComponent {
 	}
 
 	public deleteThread() {
-		this._http.delete(this._baseUrl + 'api/thread/' + this.thread.threadID).subscribe({
+		this._http.delete(this._baseUrl + URL_API_THREAD + this.thread.threadID).subscribe({
 			next: () => {location.reload();},
 			error: (e) => {window.alert("Couldn't delete thread");}
 		});
@@ -69,7 +70,7 @@ export class ThreadViewComponent {
 			topic: this.editBuffer
 		} as ThreadEditData;
 
-		this._http.patch(this._baseUrl + 'api/thread/' + this.thread.threadID, data).subscribe({
+		this._http.patch(this._baseUrl + URL_API_THREAD + this.thread.threadID, data).subscribe({
 			next: () => {location.reload();},
 			error: (e) => {window.alert("Couldn't edit thread");}
 		});

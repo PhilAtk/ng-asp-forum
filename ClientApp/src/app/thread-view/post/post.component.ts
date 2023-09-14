@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Inject, Input } from '@angular/core';
 import { CookieService } from 'src/app/cookie.service';
 import { Post, userRole } from 'src/app/model';
+import { URL_API_POST } from 'src/app/urls';
 
 interface PostEditData {
 	text: string,
@@ -42,7 +43,7 @@ export class PostComponent {
 	}
 
 	public deletePost() {
-		this._http.delete(this._baseUrl + 'api/post/' + this.post.postID).subscribe({
+		this._http.delete(this._baseUrl + URL_API_POST + this.post.postID).subscribe({
 			next: () => {location.reload();},
 			error: (e) => {window.alert("Couldn't delete post");}
 		});
@@ -63,7 +64,7 @@ export class PostComponent {
 			text: this.editBuffer
 		} as PostEditData;
 
-		this._http.patch(this._baseUrl + 'api/post/' + this.post.postID, data).subscribe({
+		this._http.patch(this._baseUrl + URL_API_POST + this.post.postID, data).subscribe({
 			next: () => {location.reload();},
 			error: (e) => {window.alert("Couldn't edit post");}
 		});

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { Thread } from 'src/app/model';
+import { URL_API_THREAD } from '../urls';
 
 @Component({
   selector: 'app-thread-list',
@@ -21,7 +22,7 @@ export class ThreadListComponent {
 	}
 
 	ngOnInit() {
-		this._http.get<Thread[]>(this._baseUrl + 'api/thread').subscribe({
+		this._http.get<Thread[]>(this._baseUrl + URL_API_THREAD).subscribe({
 			next: (threads) => this.threads = threads,
 			error: (e) => { console.log(e); this.threads = []}
 		});

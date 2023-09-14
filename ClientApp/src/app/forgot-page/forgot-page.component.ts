@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
+import { URL_API_PASS_FORGOT } from '../urls';
 
 interface ForgotData {
 	email: string
@@ -23,7 +24,7 @@ export class ForgotPageComponent {
 	}
 
 	public forgot() {
-		this._http.post<ForgotData>(this._baseUrl + 'api/password/forgot', this.data).subscribe({
+		this._http.post<ForgotData>(this._baseUrl + URL_API_PASS_FORGOT, this.data).subscribe({
 			next: () => {
 				window.alert("If an account exists with the given email, a password reset email was sent");
 			},

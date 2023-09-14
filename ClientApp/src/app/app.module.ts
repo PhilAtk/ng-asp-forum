@@ -47,6 +47,7 @@ import { UserListComponent } from './user-list/user-list.component';
       { path: '', component: HomePageComponent, pathMatch: 'full' },
       { path: 'thread/:id', component: ThreadViewComponent },
       { path: 'register/confirm/:token', component: RegisterConfComponent },
+      { path: 'register/confirm', component: RegisterConfComponent },
       { path: 'register', component: RegisterPageComponent },
       { path: 'user/:id', component: UserPageComponent },
       { path: 'userlist', component: UserListComponent},

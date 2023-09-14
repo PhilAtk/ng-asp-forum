@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { URL_API_REG_CONF } from '../urls';
 
 interface RegisterConfData {
 	token: string | null;
@@ -26,7 +27,13 @@ export class RegisterConfComponent {
 	}
 
 	ngOnInit() {
-		this._http.post<RegisterConfData>(this._baseUrl + 'api/register/confirm/', this.data).subscribe({
+		if (this.data.token && this.data.token != "") {
+			this.sendConfirmation();
+		}
+	}
+
+	sendConfirmation() {
+		this._http.post<RegisterConfData>(this._baseUrl + URL_API_REG_CONF, this.data).subscribe({
 			next: () => {
 				window.alert("Registration Complete. Please proceed to user login");
 				window.location.href = this._baseUrl;

@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from '../cookie.service';
 import { Thread, userState } from '../model';
+import { URL_API_THREAD } from '../urls';
 
 interface ThreadCreateData {
 	topic: string;
@@ -40,7 +41,7 @@ export class ThreadMakerComponent {
 	createThread() {
 		console.log(this.data);
 
-		this._http.post<Thread>(this._baseUrl + 'api/thread', this.data).subscribe({
+		this._http.post<Thread>(this._baseUrl + URL_API_THREAD, this.data).subscribe({
 			next: (res) => {
 				window.location.href = this._baseUrl + "thread/" + res.threadID;
 			},
