@@ -38,6 +38,7 @@ export class ResetPageComponent {
 		this._http.post<ResetData>(this._baseUrl + 'api/password/reset', this.data).subscribe({
 			next: () => {
 				window.alert("Successfully Reset Password");
+				window.location.href = this._baseUrl;
 			},
 			error: (e) => { window.alert("Couldn't reset password: " + e);}
 		});
