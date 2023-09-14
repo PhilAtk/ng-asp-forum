@@ -19,7 +19,9 @@ export class ThreadViewComponent {
 	_http: HttpClient;
 	_cookieService: CookieService;
 
-	thread = {} as Thread;
+	thread = {
+		author : {},
+	} as Thread;
 
 	_canEdit: boolean;
 	_editMode: boolean;
