@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ng_asp.Migrations
+namespace ng_asp_forum.Migrations
 {
     [DbContext(typeof(ForumContext))]
     [Migration("20230903201927_ChangeRoleName")]

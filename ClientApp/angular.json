@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ng_asp": {
+    "ng_asp_forum": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:application": {
@@ -72,10 +72,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "ng_asp:build:production"
+              "browserTarget": "ng_asp_forum:build:production"
             },
             "development": {
-              "browserTarget": "ng_asp:build:development",
+              "browserTarget": "ng_asp_forum:build:development",
               "proxyConfig": "proxy.conf.js"
             }
           },
@@ -84,7 +84,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ng_asp:build"
+            "browserTarget": "ng_asp_forum:build"
           }
         },
         "test": {
@@ -132,7 +132,7 @@
       }
     }
   },
-  "defaultProject": "ng_asp",
+  "defaultProject": "ng_asp_forum",
   "cli": {
     "analytics": false
   }

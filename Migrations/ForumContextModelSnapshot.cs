@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ng_asp.Migrations
+namespace ng_asp_forum.Migrations
 {
     [DbContext(typeof(ForumContext))]
     partial class ForumContextModelSnapshot : ModelSnapshot
