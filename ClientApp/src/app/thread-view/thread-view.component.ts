@@ -60,7 +60,10 @@ export class ThreadViewComponent {
 
 	public deleteThread() {
 		this._http.delete(this._baseUrl + URL_API_THREAD + this.thread.threadID).subscribe({
-			next: () => {location.reload();},
+			next: () => {
+				window.alert("Successfully deleted thread");
+				window.location.href = this._baseUrl;
+			},
 			error: (e) => {window.alert("Couldn't delete thread");}
 		});
 	}
