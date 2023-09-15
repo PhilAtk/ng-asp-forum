@@ -1,5 +1,8 @@
 version: "3.9"
 
+volumes:
+    db:
+
 services:
     ng-asp-forum:
         image: ng-asp-forum
@@ -9,6 +12,9 @@ services:
             context: .
             dockerfile: Dockerfile
         
+        volumes:
+            - db:/root/.local/share
+
         environment:
             - EMAIL_USERNAME
             - EMAIL_PASSWORD
