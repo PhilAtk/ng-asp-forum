@@ -81,7 +81,11 @@ public class ThreadController : ControllerBase {
 		}
 
 		try {
-			var thread = _db.Threads.Where(t => t.threadID == id).First();
+			var thread = _db.Threads
+				.Where(t => t.threadID == id)
+				.Include(t => t.author)
+				.Include(t => t.posts)
+				.First();
 
 			if (thread == null) {
 				return NotFound("No thread found with the given threadID");
