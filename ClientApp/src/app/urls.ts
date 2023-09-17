@@ -6,10 +6,10 @@ export const URL_API_POST = 'api/post/'
 
 export const URL_API_THREAD = 'api/thread/';
 
-export const URL_API_LOGIN = 'api/login';
+export const URL_API_LOGIN = 'api/account/login';
 
-export const URL_API_PASS_FORGOT = 'api/password/forgot';
-export const URL_API_PASS_RESET = 'api/password/reset';
+export const URL_API_PASS_FORGOT = 'api/account/password/forgot';
+export const URL_API_PASS_RESET = 'api/account/password/reset';
 
-export const URL_API_REG_REQ = 'api/register/request';
-export const URL_API_REG_CONF = 'api/register/confirm/';
+export const URL_API_REG_REQ = 'api/account/register/request';
+export const URL_API_REG_CONF = 'api/account/register/confirm/';
