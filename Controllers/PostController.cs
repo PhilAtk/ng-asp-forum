@@ -16,23 +16,18 @@ public class PostController : ControllerBase {
 		_auth = auth;
 	}
 
-	public class PostCreateData {
-		public string? text {get; set;}
-		public int threadID {get; set;}
-	};
-
-	public class PostEditData {
-		public string? text {get; set;}
-	}
-
 	[HttpDelete]
 	[Route("{id}")]
 	public IActionResult Delete(int id) {
 
 		var auth = Request.Cookies["auth"];
-
 		if (auth == null) {
 			return BadRequest("No auth token provided");
+		}
+
+		int editorID;
+		if (!_auth.VerifyBearerToken(auth, out editorID)) {
+			return Unauthorized("Bearer token is not valid");
 		}
 
 		try {
@@ -40,30 +35,24 @@ public class PostController : ControllerBase {
 				.Where(p => p.postID == id)
 				.Include(p => p.author)
 				.First();
-
 			if (post == null) {
 				return NotFound("No post found with the given postID");
 			}
-
 			if (post.author == null) {
 				return NotFound("No valid author found for the given post");
 			}
 
-			// TODO: Change verification to allow if admin/sysop
-			int userID;
-			if (!_auth.VerifyBearerToken(auth, out userID) || post.author.userID != userID) {
-				return Unauthorized();
+			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			if (editor == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
-			// TODO: Change this to handle if admin/sysop is trying to delete
-			if (post.author.userState == userState.BANNED) {
-				return Unauthorized();
+			if ((	editor.userID == post.author.userID && editor.userState >= userState.ACTIVE) ||
+				editor.userRole >= userRole.ADMIN) {
+					_db.Remove(post);
+					_db.SaveChanges();
+					return Ok();
 			}
-
-			// TODO: Keep in an audit log?
-			// Add a "visible" property to posts?
-			_db.Remove(post);
-			_db.SaveChanges();
 		}
 		catch (Exception e) {
 			_logger.LogError("Error deleting post: " + e.Message);
@@ -71,6 +60,10 @@ public class PostController : ControllerBase {
 		}
 
 		return Ok();
+	}
+
+	public class PostEditData {
+		public string? text {get; set;}
 	}
 
 	[HttpPatch]
@@ -82,9 +75,13 @@ public class PostController : ControllerBase {
 		}
 
 		var auth = Request.Cookies["auth"];
-
 		if (auth == null) {
 			return BadRequest("No auth token provided");
+		}
+
+		int editorID;
+		if (!_auth.VerifyBearerToken(auth, out editorID)) {
+			return Unauthorized("Bearer token is not valid");
 		}
 
 		try {
@@ -92,28 +89,25 @@ public class PostController : ControllerBase {
 				.Where(p => p.postID == id)
 				.Include(p => p.author)
 				.First();
-
 			if (post == null) {
 				return NotFound("No post found with the given postID");
 			}
-
 			if (post.author == null) {
 				return NotFound("No valid author found for the given post");
 			}
 
-			int userID;
-			if (!_auth.VerifyBearerToken(auth, out userID) || post.author.userID != userID) {
-				return Unauthorized();
+			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			if (editor == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
-			if (post.author.userState == userState.BANNED) {
-				return Unauthorized();
+			if ((	editor.userID == post.author.userID && editor.userState >= userState.ACTIVE) ||
+				editor.userRole >= userRole.ADMIN) {
+					// TODO: Mark post as edited
+					post.text = data.text;
+					_db.SaveChanges();
+					return Ok();
 			}
-
-			// TODO: Mark the post as edited
-			// TODO: Add a timestamp for last edit
-			post.text = data.text;
-			_db.SaveChanges();
 		}
 		
 		catch (Exception e) {
@@ -123,6 +117,11 @@ public class PostController : ControllerBase {
 
 		return Ok();
 	}
+
+	public class PostCreateData {
+		public string? text {get; set;}
+		public int threadID {get; set;}
+	};
 
 	[HttpPost]
 	public IActionResult Post(PostCreateData data) {
@@ -137,37 +136,38 @@ public class PostController : ControllerBase {
 			return BadRequest("No auth token provided");
 		}
 
-		int userID;
-		if (!_auth.VerifyBearerToken(auth, out userID)) {
+		int authorID;
+		if (!_auth.VerifyBearerToken(auth, out authorID)) {
 			return Unauthorized();
 		}
 
 		try {
 			var thread = _db.Threads.Where(t => t.threadID == data.threadID).First();
-
 			if (thread == null) {
-				return BadRequest("Thread doesn't exist");
+				return NotFound("Thread doesn't exist");
 			}
 
-			var author = _db.Users.Where(u => u.userID == userID).First();
-
+			var author = _db.Users.Where(u => u.userID == authorID).First();
 			if (author == null) {
-				return BadRequest("No user found with the provided userID");
+				return NotFound("No user found with the provided userID");
 			}
 
-			var post = new ForumPost{
-				date = DateTime.Now,
-				author = author,
-				text = data.text,
-				thread = thread
-			};
+			if (author.userState >= userState.ACTIVE) {
+				var post = new ForumPost{
+					date = DateTime.Now,
+					author = author,
+					text = data.text,
+					thread = thread
+				};
 
-			_db.Add(post);
-			_db.SaveChanges();
+				_db.Add(post);
+				_db.SaveChanges();
 
-			return Ok();
+				return Ok();
+			}
+
+			return Unauthorized();
 		}
-
 		catch (Exception e) {
 			_logger.LogError(e.Message);
 			return StatusCode(500);

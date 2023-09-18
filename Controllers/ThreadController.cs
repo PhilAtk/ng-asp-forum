@@ -18,15 +18,6 @@ public class ThreadController : ControllerBase {
 		_auth = auth;
 	}
 
-	public class ThreadCreateData {
-		public string? topic {get; set;}
-		public string? text {get; set;}
-	};
-
-	public class ThreadEditData {
-		public string? topic {get; set;}
-	};
-
     	[HttpGet]
     	public ActionResult<IEnumerable<ForumThread>> GetThreadList() {
 		try {
@@ -80,37 +71,35 @@ public class ThreadController : ControllerBase {
 			return BadRequest("No auth token provided");
 		}
 
+		int editorID;
+		if (!_auth.VerifyBearerToken(auth, out editorID)) {
+			return Unauthorized("Bearer token is not valid");
+		}
+
 		try {
 			var thread = _db.Threads
 				.Where(t => t.threadID == id)
 				.Include(t => t.author)
 				.Include(t => t.posts)
 				.First();
-
 			if (thread == null) {
 				return NotFound("No thread found with the given threadID");
-
 			}
-
 			if (thread.author == null) {
 				return NotFound("No valid author for the given thread");
 			}
 
-			// TODO: Change verification to allow if admin/sysop
-			int userID;
-			if (!_auth.VerifyBearerToken(auth, out userID) || thread.author.userID != userID) {
-				return Unauthorized();
+			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			if (editor == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
-			// TODO: Change this to handle if admin/sysop is trying to delete
-			if (thread.author.userState == userState.BANNED) {
-				return Unauthorized();
+			if ((	editor.userID == thread.author.userID && editor.userState >= userState.ACTIVE) ||
+				editor.userRole >= userRole.ADMIN) {
+					_db.Remove(thread);
+					_db.SaveChanges();
+					return Ok();
 			}
-
-			// TODO: Keep in an audit log?
-			// Add a "visible" property to posts?
-			_db.Remove(thread);
-			_db.SaveChanges();
 		}
 		catch (Exception e) {
 			_logger.LogError("Error deleting thread: " + e.Message);
@@ -120,6 +109,10 @@ public class ThreadController : ControllerBase {
 		return Ok();
 	}
 
+	public class ThreadEditData {
+		public string? topic {get; set;}
+	};
+
 	[HttpPatch]
 	[Route("{id}")]
 	public IActionResult UpdateThread(int id, ThreadEditData data) {
@@ -128,9 +121,13 @@ public class ThreadController : ControllerBase {
 		}
 
 		var auth = Request.Cookies["auth"];
-
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
+		}
+
+		int editorID;
+		if (!_auth.VerifyBearerToken(auth, out editorID)) {
+			return Unauthorized("Bearer token is not valid");
 		}
 
 		try {
@@ -138,28 +135,25 @@ public class ThreadController : ControllerBase {
 				.Where(t => t.threadID == id)
 				.Include(t => t.author)
 				.First();
-
 			if (thread == null) {
 				return NotFound("No post found with the given postID");
 			}
-
 			if (thread.author == null) {
 				return NotFound("No valid author for the given thread");
 			}
 
-			int userID;
-			if (!_auth.VerifyBearerToken(auth, out userID) || thread.author.userID != userID) {
-				return Unauthorized();
+			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			if (editor == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
-			if (thread.author.userState == userState.BANNED) {
-				return Unauthorized();
+			if ((	editor.userID == thread.author.userID && editor.userState >= userState.ACTIVE) ||
+				editor.userRole >= userRole.ADMIN) {
+					// TODO: Mark thread as edited
+					thread.topic = data.topic;
+					_db.SaveChanges();
+					return Ok();
 			}
-
-			// TODO: Mark the post as edited
-			// TODO: Add a timestamp for last edit
-			thread.topic = data.topic;
-			_db.SaveChanges();
 		}
 		catch (Exception e) {
 			_logger.LogError("Error updating thread: " + e.Message);
@@ -168,6 +162,11 @@ public class ThreadController : ControllerBase {
 
 		return Ok();
 	}
+
+	public class ThreadCreateData {
+		public string? topic {get; set;}
+		public string? text {get; set;}
+	};
 
 	[HttpPost]
 	public IActionResult PostThread(ThreadCreateData data) {
@@ -186,38 +185,40 @@ public class ThreadController : ControllerBase {
 			return BadRequest("No post text provided");
 		}
 
-		int userID;
-		if (!_auth.VerifyBearerToken(auth, out userID)) {
+		int authorID;
+		if (!_auth.VerifyBearerToken(auth, out authorID)) {
 			return Unauthorized();
 		}
 
 		try {
-			var author = _db.Users.Where(u => u.userID == userID).First();
-
+			var author = _db.Users.Where(u => u.userID == authorID).First();
 			if (author == null) {
-				return BadRequest("No user found with the provided userID");
+				return NotFound("No user found with the provided userID");
 			}
 
-			var thread = new ForumThread{
-				date = DateTime.Now,
-				topic = data.topic,
-				author = author,
-				posts = new List<ForumPost>()
-			};
+			if (author.userState >= userState.ACTIVE) {
+				var thread = new ForumThread{
+					date = DateTime.Now,
+					topic = data.topic,
+					author = author,
+					posts = new List<ForumPost>()
+				};
 
-			thread.posts.Add(new ForumPost{
-				date = thread.date,
-				text = data.text,
-				author = author,
-				thread = thread
-			});
+				thread.posts.Add(new ForumPost{
+					date = thread.date,
+					text = data.text,
+					author = author,
+					thread = thread
+				});
 
-			_db.Add(thread);
-			_db.SaveChanges();
-			
-			var baseURL = Request.Scheme + "://" + Request.Host + '/';
+				_db.Add(thread);
+				_db.SaveChanges();
+				
+				var baseURL = Request.Scheme + "://" + Request.Host + '/';
+				return Created(baseURL + "thread/" + thread.threadID, thread);
+			}
 
-			return Created(baseURL + "thread/" + thread.threadID, thread);
+			return Unauthorized();
 		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);

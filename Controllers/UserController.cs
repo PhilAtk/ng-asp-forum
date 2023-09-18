@@ -53,38 +53,39 @@ public class UserController : ControllerBase {
 	[Route("{id}")]
 	public ActionResult UpdateUser(int id, UserEditData data) {
 		var auth = Request.Cookies["auth"];
-
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
 		}
 
-		try {
-			var user = _db.Users.Where(u => u.userID == id).First();
+		int editorID;
+		if (!_auth.VerifyBearerToken(auth, out editorID)) {
+			return Unauthorized("Bearer token is not valid");
+		}
 
-			if (user == null) {
+		try {
+			var user_to_edit = _db.Users.Where(u => u.userID == id).First();
+			if (user_to_edit == null) {
 				return NotFound("No user found with the given userID");
 			}
 
-			// TODO: Change verification to allow if admin/sysop
-			int userID;
-			if (!_auth.VerifyBearerToken(auth, out userID) || user.userID != userID) {
-				return Unauthorized();
+			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			if (editor == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
-			// TODO: Change this to handle if admin/sysop is trying to delete
-			if (user.userState == userState.BANNED) {
-				return Unauthorized();
+			if ((	editor.userID == user_to_edit.userID && editor.userState >= userState.ACTIVE) ||
+				editor.userRole >= userRole.ADMIN) {
+					user_to_edit.bio = data.bio;
+					_db.SaveChanges();
+					return Ok();
 			}
 
-			user.bio = data.bio;
-			_db.SaveChanges();
+			return Unauthorized();
 		}
 		catch (Exception e) {
 			_logger.LogError("Error editing user: " + e.Message);
 			return StatusCode(500);
 		}
-
-		return Ok();
 	}
 
 	public class AdminUserEditData {
@@ -101,20 +102,18 @@ public class UserController : ControllerBase {
 			return BadRequest("No auth token provided");
 		}
 
+		int editorUserID;
+		if (!_auth.VerifyBearerToken(auth, out editorUserID)) {
+			return Unauthorized("Bearer token is not valid");
+		}
+
 		try {
 			var user = _db.Users.Where(u => u.userID == id).First();
-
 			if (user == null) {
 				return NotFound("No user found with the given userID");
 			}
 
-			int editorUserID;
-			if (!_auth.VerifyBearerToken(auth, out editorUserID)) {
-				return Unauthorized();
-			}
-
 			var editor = _db.Users.Where(u => u.userID == editorUserID).First();
-
 			if (editor == null) {
 				return NotFound("No user found with the given auth credentials");
 			}
@@ -126,12 +125,12 @@ public class UserController : ControllerBase {
 			user.userState = data.state;
 			user.userRole = data.role;
 			_db.SaveChanges();
+
+			return Ok();
 		}
 		catch (Exception e) {
 			_logger.LogError("Error editing user: " + e.Message);
 			return StatusCode(500);
 		}
-
-		return Ok();
 	}
 }

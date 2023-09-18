@@ -185,35 +185,28 @@ public class AccountController : ControllerBase {
 		try {
 			int user_count = 0;
 			user_count += _db.Users.Where(u => u.userName == data.username).Count();
-			
 			if (user_count > 0) {
 				return BadRequest("Username already exists");
 			}
 
 			user_count += _db.Users.Where(u => u.email == data.email).Count();
-
 			if (user_count > 0) {
 				return BadRequest("Email already in use");
 			}
 
-			var hashedPass = _auth.Hash(data.password);
-			
-			var regCode = _auth.GetRandom6charCode();
-
 			var user = new ForumUser{
 				userName = data.username,
-				password = hashedPass,
+				password = _auth.Hash(data.password),
 				email = data.email,
 				userState = userState.AWAIT_REG,
 				userRole = userRole.USER,
-				code = regCode
+				code = _auth.GetRandom6charCode()
 			};
 
 			_db.Add(user);
 			_db.SaveChanges();
 
-			//var token = _auth.GenerateRegisterToken(user.userID);
-			_email.sendRegistrationConfirmation(user.email, regCode);
+			_email.sendRegistrationConfirmation(user.email, user.code);
 
 			return Ok();
 		}
