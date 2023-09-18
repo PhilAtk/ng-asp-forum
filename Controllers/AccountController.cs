@@ -102,11 +102,14 @@ public class AccountController : ControllerBase {
 				return StatusCode(500);
 			}
 
-			// Generate a token with this userID
-			var token = _auth.GenerateResetToken(user.userID);
+			// Generate a reset code
+			var resetCode = _auth.GetRandom6charCode();
 
 			try {
-				_email.sendPasswordReset(user.email, token);
+				user.code = resetCode;
+				_db.SaveChanges();
+
+				_email.sendPasswordReset(user.email, resetCode);
 			}
 			catch (Exception e) {
 				_logger.LogError(e.Message);
@@ -126,8 +129,6 @@ public class AccountController : ControllerBase {
 	[Route("password/reset")]
 	public IActionResult VerifyPasswordReset(ResetData data) {
 
-		// TODO: Don't let the same token be used twice
-
 		if (data.token == null ) {
 			return BadRequest("No token provided for password reset");
 		}
@@ -136,20 +137,17 @@ public class AccountController : ControllerBase {
 			return BadRequest("No password provided");
 		}
 
-		// Verify the token
-		int userID;
-		if (!_auth.VerifyResetToken(data.token, out userID)) {
-			return Unauthorized();
+		// Find the user for this code
+		var user = _db.Users.Where(u => u.code == data.token).First();
+
+		if (user == null) {
+			return NotFound();
 		}
 
-		// Find the user with that userID
-		var user = _db.Users.Where(u => u.userID == userID).First();
-
-		// Update the password
-		user.password = _auth.Hash(data.password);
-
-		try {
-			_db.Update(user);
+		try {		
+			// Update the password
+			user.password = _auth.Hash(data.password);
+			user.code = null;
 			_db.SaveChanges();
 		}
 		catch (Exception e) {
@@ -247,8 +245,8 @@ public class AccountController : ControllerBase {
 			user.userState = userState.ACTIVE;
 			user.code = null;
 
-			_db.Update(user);
 			_db.SaveChanges();
+
 			return Ok();	
 		}
 		catch (Exception e) {
