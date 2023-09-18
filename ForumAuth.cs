@@ -98,63 +98,6 @@ public class ForumAuthenticator {
 		return true;
 	}
 
-	public string GenerateResetToken(int userID) {
-
-		var handler = new JwtSecurityTokenHandler();
-
-		var descriptor = new SecurityTokenDescriptor(){
-			Subject = new ClaimsIdentity(new Claim[]{
-				new Claim(ClaimTypes.NameIdentifier, userID.ToString()),
-				new Claim(PASS_RESET, PASS_RESET)
-			}),
-			Expires = DateTime.UtcNow.AddMinutes(10),
-			Issuer = _issuer,
-			Audience = _audience,
-			SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
-		};
-
-		var token = handler.CreateToken(descriptor);
-
-		return handler.WriteToken(token);
-	}
-
-	// TODO: Change to use same method as Register confirmation
-	public bool VerifyResetToken(string token, out int userID) {
-
-		var handler = new JwtSecurityTokenHandler();
-
-		SecurityToken validatedToken;
-		try {
-			var thing = handler.ValidateToken(token, new TokenValidationParameters(){
-				ValidateIssuerSigningKey = true,
-				IssuerSigningKey = securityKey,
-
-				ValidateIssuer = true,
-				ValidIssuer = _issuer,
-
-				ValidateAudience = true, 
-				ValidAudience = _audience
-			}, out validatedToken);
-
-			var tokenUserID = int.Parse(thing.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-			var tokenPassReset = thing.Claims.First(c => c.Type == PASS_RESET).Value;
-
-			if (tokenPassReset != PASS_RESET) {
-				userID = 0;
-				return false;
-			}
-
-			userID = tokenUserID;
-
-			return true;
-		}
-		catch {
-			userID = 0;
-			return false;
-		}
-	}
-
-
 	public string Hash(string input) {
 		byte[] salt = RandomNumberGenerator.GetBytes(_saltSize);
 		byte[] hash = Rfc2898DeriveBytes.Pbkdf2(input, salt, _iterations, _algorithm, _keySize);
