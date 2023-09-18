@@ -91,30 +91,32 @@ public class AccountController : ControllerBase {
 	public IActionResult PasswordResetRequest(ForgotData data) {
 		var user = _db.Users.Where(u => u.email == data.email).First();
 
-		if (user != null) {
-			// Must have already registered, or not been banned
-			if (user.userState != userState.ACTIVE) {
-				return Unauthorized("Please finish registration before requesting a password reset");
-			}
+		if (user == null) {
+			return NotFound();
+		}
 
-			if (string.IsNullOrWhiteSpace(user.email)) {
-				// TODO: This would be very bad, ask them to contact an admin
-				return StatusCode(500);
-			}
+		// Must have already registered, or not been banned
+		if (user.userState != userState.ACTIVE) {
+			return Unauthorized("Please finish registration before requesting a password reset");
+		}
 
-			// Generate a reset code
-			var resetCode = _auth.GetRandom6charCode();
+		if (string.IsNullOrWhiteSpace(user.email)) {
+			// TODO: This would be very bad, ask them to contact an admin
+			return StatusCode(500);
+		}
 
-			try {
-				user.code = resetCode;
-				_db.SaveChanges();
+		// Generate a reset code
+		var resetCode = _auth.GetRandom6charCode();
 
-				_email.sendPasswordReset(user.email, resetCode);
-			}
-			catch (Exception e) {
-				_logger.LogError(e.Message);
-				return StatusCode(500); // It might have been our fault idk
-			}
+		try {
+			user.code = resetCode;
+			_db.SaveChanges();
+
+			_email.sendPasswordReset(user.email, resetCode);
+		}
+		catch (Exception e) {
+			_logger.LogError(e.Message);
+			return StatusCode(500); // It might have been our fault idk
 		}
 
 		return Ok();
