@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CookieService } from '../cookie.service';
+import { AuthService } from '../auth.service';
 import { User } from '../model';
 
 @Component({
@@ -9,25 +9,9 @@ import { User } from '../model';
 })
 export class NavMenuComponent {
 
-	_cookieService: CookieService;
-	_loggedIn: boolean;
+	_auth: AuthService;
 
-	user = {} as User;
-
-	constructor(cookieService: CookieService) {
-		this._loggedIn = false;
-		this._cookieService = cookieService;
-	}
-
-	ngOnInit() {
-		this.user.userName = this._cookieService.getUsername();
-		if (this.user.userName) {
-			this._loggedIn = true;
-			this.user.userID = this._cookieService.getUserID();
-		}
-	}
-
-	public logout() {
-		this._cookieService.Logout();
+	constructor(auth: AuthService) {
+		this._auth = auth;
 	}
 }

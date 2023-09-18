@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
-import { CookieService } from '../cookie.service';
+import { AuthService } from '../auth.service';
 import { LoginResult } from '../model';
 import { URL_API_LOGIN } from '../urls';
 
@@ -17,23 +17,23 @@ interface LoginData {
 export class LoginBoxComponent {
 
 	_http: HttpClient;
-	_cookieService: CookieService;
+	_auth: AuthService;
 	_baseUrl: string;
 
 	data = {} as LoginData;
 
-	constructor(cookieService: CookieService, http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
+	constructor(auth: AuthService, http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
 
 		this._http = http;
 		this._baseUrl = baseUrl;
 
-		this._cookieService = cookieService;
+		this._auth = auth;
 	}
 
 	public sendLogin() {
 		this._http.post<LoginResult>(this._baseUrl + URL_API_LOGIN, this.data).subscribe({
 			next: (res) => {
-				this._cookieService.setLogin(res);
+				this._auth.setLogin(res);
 			},
 			error: (e) => {
 				window.alert("Couldn't login");

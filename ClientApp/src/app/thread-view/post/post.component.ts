@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject, Input } from '@angular/core';
-import { CookieService } from 'src/app/cookie.service';
+import { AuthService } from 'src/app/auth.service';
 import { Post, userRole } from 'src/app/model';
 import { URL_API_POST } from 'src/app/urls';
 
@@ -17,7 +17,7 @@ export class PostComponent {
 	@Input() post!: Post;
 	
 	_baseUrl: string;
-	_cookieService: CookieService;
+	_auth: AuthService;
 	_http: HttpClient;
 
 	_canEdit: boolean;
@@ -27,9 +27,9 @@ export class PostComponent {
 
 	editUrl: string = "";
 
-	constructor(cookieService: CookieService, http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
+	constructor(auth: AuthService, http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
 		this._baseUrl = baseUrl;
-		this._cookieService = cookieService;
+		this._auth = auth;
 		this._http = http;
 
 		this._canEdit = false;
@@ -37,7 +37,7 @@ export class PostComponent {
 	}
 
 	ngOnInit() {
-		if (this._cookieService.getUserID() == this.post.author.userID || this._cookieService.getUserRole() >= userRole.ADMIN) {
+		if (this._auth.user.userID == this.post.author.userID || this._auth.user.userRole >= userRole.ADMIN) {
 			this._canEdit = true;
 		}
 	}

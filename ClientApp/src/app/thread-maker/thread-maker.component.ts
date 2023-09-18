@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CookieService } from '../cookie.service';
+import { AuthService } from '../auth.service';
 import { Thread, userState } from '../model';
 import { URL_API_THREAD } from '../urls';
 
@@ -18,22 +18,22 @@ export class ThreadMakerComponent {
 
 	_baseUrl: string;
 	_http: HttpClient;
-	_cookieService: CookieService;
+	_auth: AuthService;
 
 	data = {} as ThreadCreateData;
 
 	_canPost: Boolean;
 
-	constructor (cookieSerivce: CookieService, http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
+	constructor (cookieSerivce: AuthService, http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
 		this._baseUrl = baseUrl;
 		this._http = http;
-		this._cookieService = cookieSerivce;
+		this._auth = cookieSerivce;
 
 		this._canPost = false;
 	}
 	
 	ngOnInit() {
-		if (this._cookieService.getUserState() >= userState.ACTIVE) {
+		if (this._auth.user.userState >= userState.ACTIVE) {
 			this._canPost = true;
 		}
 	}

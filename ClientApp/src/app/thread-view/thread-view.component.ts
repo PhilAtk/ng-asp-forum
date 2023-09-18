@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Thread, userRole } from 'src/app/model';
-import { CookieService } from '../cookie.service';
+import { AuthService } from '../auth.service';
 import { URL_API_THREAD } from '../urls';
 
 interface ThreadEditData {
@@ -18,7 +18,7 @@ export class ThreadViewComponent {
 
 	_baseUrl: string;
 	_http: HttpClient;
-	_cookieService: CookieService;
+	_auth: AuthService;
 
 	thread = {
 		author : {},
@@ -29,10 +29,10 @@ export class ThreadViewComponent {
 
 	editBuffer: string = "";
 
-	constructor(cookieService: CookieService, http: HttpClient, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
+	constructor(auth: AuthService, http: HttpClient, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
 		this.thread.threadID = Number(route.snapshot.paramMap.get('id'));
 
-		this._cookieService = cookieService;
+		this._auth = auth;
 
 		this._baseUrl = baseUrl;
 		this._http = http;
@@ -45,7 +45,7 @@ export class ThreadViewComponent {
 		this._http.get<Thread>(this._baseUrl + URL_API_THREAD + this.thread.threadID).subscribe({
 			next: (t) => {
 				this.thread = t;
-				if (this._cookieService.getUserID() == this.thread.author.userID || this._cookieService.getUserRole() >= userRole.ADMIN) {
+				if (this._auth.user.userID == this.thread.author.userID || this._auth.user.userRole >= userRole.ADMIN) {
 					this._canEdit = true;
 				}
 			},

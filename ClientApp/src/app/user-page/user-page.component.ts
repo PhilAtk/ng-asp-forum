@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { User, userRole } from '../model';
-import { CookieService } from '../cookie.service';
+import { AuthService } from '../auth.service';
 import { URL_API_USER } from '../urls';
 
 interface UserEditData {
@@ -18,7 +18,7 @@ export class UserPageComponent {
 
 	_baseUrl: string;
 	_http: HttpClient;
-	_cookieService: CookieService;
+	_auth: AuthService;
 
 	_user = {} as User;
 
@@ -27,11 +27,11 @@ export class UserPageComponent {
 
 	editBuffer: string = "";
 
-	constructor(http: HttpClient, cookieService: CookieService, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
+	constructor(http: HttpClient, auth: AuthService, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
 		this._user.userID = Number(route.snapshot.paramMap.get('id'));
 
 		this._http = http;
-		this._cookieService = cookieService;
+		this._auth = auth;
 		this._baseUrl = baseUrl;
 
 		this._canEdit = false;
@@ -42,7 +42,7 @@ export class UserPageComponent {
 		this._http.get<User>(this._baseUrl + URL_API_USER + this._user.userID).subscribe({
 			next: (u) => {
 				this._user = u;
-				if (this._cookieService.getUserID() == this._user.userID || this._cookieService.getUserRole() >= userRole.ADMIN) {
+				if (this._auth.user.userID == this._user.userID || this._auth.user.userRole >= userRole.ADMIN) {
 					this._canEdit = true;
 				}
 			},

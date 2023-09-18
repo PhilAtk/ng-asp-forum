@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { CookieService } from '../cookie.service';
-import { userRole, userState } from '../model';
+import { AuthService } from '../auth.service';
+import { userState } from '../model';
 import { URL_API_POST } from '../urls';
 
 interface PostCreateData {
@@ -19,16 +19,16 @@ export class PostMakerComponent {
 
 	_http: HttpClient;
 	_baseUrl: string;
-	_cookieService: CookieService;
+	_auth: AuthService;
 
 	_canPost: boolean;
 
 	data = {} as PostCreateData;
 
-	constructor(cookieSerivce: CookieService, http: HttpClient, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
+	constructor(cookieSerivce: AuthService, http: HttpClient, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
 		this.data.threadID = Number(route.snapshot.paramMap.get('id'));
 
-		this._cookieService = cookieSerivce;
+		this._auth = cookieSerivce;
 		this._http = http;
 		this._baseUrl = baseUrl;
 
@@ -36,7 +36,7 @@ export class PostMakerComponent {
 	}
 
 	ngOnInit() {
-		if (this._cookieService.getUserState() >= userState.ACTIVE) {
+		if (this._auth.user.userState >= userState.ACTIVE) {
 			this._canPost = true;
 		}
 	}

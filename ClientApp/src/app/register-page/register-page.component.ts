@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
-import { CookieService } from '../cookie.service';
 import { URL_API_REG_REQ } from '../urls';
 
 interface RegisterData {
