@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { CookieService } from '../cookie.service';
-import { LoginResult, User } from '../model';
+import { LoginResult } from '../model';
 import { URL_API_LOGIN } from '../urls';
 
 interface LoginData {
@@ -20,10 +20,7 @@ export class LoginBoxComponent {
 	_cookieService: CookieService;
 	_baseUrl: string;
 
-	_loggedIn: boolean;
-
 	data = {} as LoginData;
-	user = {} as User;
 
 	constructor(cookieService: CookieService, http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
 
@@ -31,16 +28,6 @@ export class LoginBoxComponent {
 		this._baseUrl = baseUrl;
 
 		this._cookieService = cookieService;
-
-		this._loggedIn = false;
-	}
-
-	ngOnInit() {
-		this.user.userName = this._cookieService.getUsername();
-		if (this.user.userName) {
-			this._loggedIn = true;
-			this.user.userID = this._cookieService.getUserID();
-		}
 	}
 
 	public sendLogin() {
@@ -55,7 +42,5 @@ export class LoginBoxComponent {
 		});
 	}
 
-	public logout() {
-		this._cookieService.Logout();
-	}
+
 }

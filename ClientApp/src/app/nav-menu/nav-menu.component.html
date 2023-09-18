@@ -1,10 +1,18 @@
 <header>
-  <nav
-    class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
-  >
-    <div class="container">
-      <a class="navbar-brand" [routerLink]="['/']">Forum</a>
-    </div>
-    <app-login-box></app-login-box>
-  </nav>
+	<nav
+		class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
+	>
+		<div class="container">
+			<a class="navbar-brand" [routerLink]="['/']">Forum</a>
+		</div>
+		
+		<div *ngIf="_loggedIn; else noLogin">
+			<h1>Hello, <a [routerLink]="['/user', user.userID]">{{user.userName}}</a></h1>
+			<button (click)="logout()">Logout</button>
+		</div>
+
+		<ng-template #noLogin>
+			<app-login-box></app-login-box>
+		</ng-template>
+	</nav>
 </header>
