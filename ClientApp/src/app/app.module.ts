@@ -52,7 +52,8 @@ import { UserListComponent } from './user-list/user-list.component';
       { path: 'user/:id', component: UserPageComponent },
       { path: 'userlist', component: UserListComponent},
       { path: 'reset/:token', component: ResetPageComponent },
-      { path: 'forgot', component: ForgotPageComponent }
+      { path: 'forgot', component: ForgotPageComponent },
+      { path: 'login', component: LoginBoxComponent }
     ], {
       anchorScrolling: 'enabled',
       onSameUrlNavigation: 'ignore'

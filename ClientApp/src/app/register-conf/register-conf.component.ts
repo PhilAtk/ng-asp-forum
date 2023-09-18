@@ -36,7 +36,7 @@ export class RegisterConfComponent {
 		this._http.post<RegisterConfData>(this._baseUrl + URL_API_REG_CONF, this.data).subscribe({
 			next: () => {
 				window.alert("Registration Complete. Please proceed to user login");
-				window.location.href = this._baseUrl;
+				window.location.href = this._baseUrl + 'login';
 			},
 			error: (e) => { window.alert("Unable to register. Please contact an admin if you believe this is in error");}
 		});
