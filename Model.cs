@@ -32,6 +32,8 @@ public class ForumThread {
 	public ForumUser author {get; set;}
 
 	public DateTime date {get; set;}
+	public DateTime? dateModified {get; set;}
+	public bool edited {get; set;}
 
 	public string? topic {get; set;}
 
@@ -48,6 +50,8 @@ public class ForumPost {
 	public ForumUser? author {get; set;}
 
 	public DateTime date {get; set;}
+	public DateTime? dateModified {get; set;}
+	public bool edited {get; set;}
 	public string? text {get; set;}
 }
 	
@@ -86,4 +90,3 @@ public class ForumUser {
 
 	public string? bio {get; set;}
 }
-

@@ -149,7 +149,8 @@ public class ThreadController : ControllerBase {
 
 			if ((	editor.userID == thread.author.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
-					// TODO: Mark thread as edited
+					thread.edited = true;
+					thread.dateModified = DateTime.Now;
 					thread.topic = data.topic;
 					_db.SaveChanges();
 					return Ok();

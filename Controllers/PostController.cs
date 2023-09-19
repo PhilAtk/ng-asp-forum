@@ -103,7 +103,8 @@ public class PostController : ControllerBase {
 
 			if ((	editor.userID == post.author.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
-					// TODO: Mark post as edited
+					post.edited = true;
+					post.dateModified = DateTime.Now;
 					post.text = data.text;
 					_db.SaveChanges();
 					return Ok();
@@ -157,7 +158,8 @@ public class PostController : ControllerBase {
 					date = DateTime.Now,
 					author = author,
 					text = data.text,
-					thread = thread
+					thread = thread,
+					edited = false
 				};
 
 				_db.Add(post);
