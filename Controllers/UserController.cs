@@ -19,11 +19,30 @@ public class UserController : ControllerBase {
 
 	[HttpGet]
 	public ActionResult<IEnumerable<ForumUser>> GetUserList() {
-		try {
-			// TODO: Make sure we don't spill any info we shouldn't
-			var list = _db.Users;
+		var auth = Request.Cookies["auth"];
+		if (string.IsNullOrWhiteSpace(auth)) {
+			return BadRequest("No auth token provided");
+		}
 
-			return Ok(list.ToArray());
+		int viewerID;
+		if (!_auth.VerifyBearerToken(auth, out viewerID)) {
+			return Unauthorized("Bearer token is not valid");
+		}
+
+		try {
+			var viewer = _db.Users.Where(u => u.userID == viewerID).First();
+			if (viewer == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
+			}
+
+			if (viewer.userRole >= userRole.ADMIN) {
+				// TODO: Make sure we don't spill any info we shouldn't
+				var list = _db.Users;
+
+				return Ok(list.ToArray());
+			}
+
+			return Unauthorized();
 		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);
