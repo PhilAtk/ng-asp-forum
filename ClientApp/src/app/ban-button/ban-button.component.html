@@ -1,0 +1,5 @@
+<button title="Ban" (click)="prepareBan()">🚫</button><span *ngIf="_editMode">
+	<input type="text" [(ngModel)]="data.reason">
+	<button (click)="saveBan()">Ban</button>
+	<button (click)="cancelBan()">Cancel</button>
+</span>

@@ -4,6 +4,7 @@
 		<th>Username</th>
 		<th>Status</th>
 		<th>Role</th>
+		<th>Actions</th>
 	</tr>
 	<tr *ngFor="let user of users; index as i">
 		<style>td {outline: solid black 1px;}</style>
@@ -21,7 +22,7 @@
 			</select>
 		</td>
 		<td>
-			<button (click)="saveUser(i)">Save</button>
+			<app-ban-button [user]="user"></app-ban-button>
 		</td>
 	</tr>
 </table>
