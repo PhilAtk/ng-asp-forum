@@ -11,6 +11,8 @@ export interface Post {
 	thread: Thread,
 	author: User,
 	date: number,
+	dateModified: number,
+	edited: boolean
 	text: string
 }
 
@@ -18,6 +20,8 @@ export interface Thread {
 	threadID: number,
 	author: User,
 	date: number,
+	dateModified: number,
+	edited: boolean,
 	topic: string,
 	posts?: Post[]
 }

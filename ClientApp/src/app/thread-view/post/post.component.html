@@ -18,5 +18,8 @@
 	<div>
 		<span>{{post.text}}</span>
 	</div>
+	<div style="outline: auto;" *ngIf="post.edited">
+		Edited {{post.dateModified}}
+	</div>
 </ng-template>
 

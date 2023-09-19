@@ -13,6 +13,7 @@
 	<button (click)="deleteThread()">Delete</button>
 </span>
 <h4>by {{thread.author.userName}} on {{thread.date}}</h4>
+<small *ngIf="thread.edited">Edited on {{thread.dateModified}}</small>
 
 <table>
 	<style>tr {outline: solid black 1px;}</style>
