@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth.service';
-import { User } from '../model';
+import { userRole } from '../model';
 
 @Component({
 	selector: 'app-nav-menu',
@@ -11,7 +11,14 @@ export class NavMenuComponent {
 
 	_auth: AuthService;
 
+	_admin: boolean;
+
 	constructor(auth: AuthService) {
 		this._auth = auth;
+
+		this._admin = false;
+		if (this._auth.user.userRole >= userRole.ADMIN) {
+			this._admin = true;
+		}
 	}
 }

@@ -1,7 +1,5 @@
 <header>
-	<nav
-		class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
-	>
+	<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
 		<div class="container">
 			<a class="navbar-brand" [routerLink]="['/']">Forum</a>
 		</div>
@@ -9,6 +7,10 @@
 		<div *ngIf="_auth._loggedIn; else noLogin">
 			<h1>Hello, <a [routerLink]="['/user', _auth.user.userID]">{{_auth.user.userName}}</a></h1>
 			<button (click)="_auth.Logout()">Logout</button>
+
+			<div *ngIf="_admin">
+				<a [routerLink]="['/userlist']">User List</a>
+			</div>
 		</div>
 
 		<ng-template #noLogin>
