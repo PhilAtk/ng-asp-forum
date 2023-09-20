@@ -18,7 +18,8 @@
 			<span>{{roleMap.get(user.userRole)}}</span>
 		</td>
 		<td>
-			<app-ban-button [user]="user"></app-ban-button>
+			<app-ban-button *ngIf="user.userState >= 0" [user]="user"></app-ban-button>
+			<app-unban-button *ngIf="user.userState == -2" [user]="user"></app-unban-button>
 		</td>
 	</tr>
 </table>

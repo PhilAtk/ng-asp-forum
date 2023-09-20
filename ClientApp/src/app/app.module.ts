@@ -21,6 +21,7 @@ import { PostComponent } from './thread-view/post/post.component';
 import { UserPageComponent } from './user-page/user-page.component';
 import { UserListComponent } from './user-list/user-list.component';
 import { BanButtonComponent } from './actions/ban-button/ban-button.component';
+import { UnbanButtonComponent } from './actions/unban-button/unban-button.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { BanButtonComponent } from './actions/ban-button/ban-button.component';
     PostComponent,
     UserPageComponent,
     UserListComponent,
-    BanButtonComponent
+    BanButtonComponent,
+    UnbanButtonComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

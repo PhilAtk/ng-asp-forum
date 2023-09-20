@@ -158,6 +158,47 @@ public class UserController : ControllerBase {
 		}
 	}
 
+	[HttpPost]
+	[Route("unban/{id}")]
+	public ActionResult Unban(int id) {
+		var auth = Request.Cookies["auth"];
+
+		if (string.IsNullOrWhiteSpace(auth)) {
+			return BadRequest("No auth token provided");
+		}
+
+		int editorUserID;
+		if (!_auth.VerifyBearerToken(auth, out editorUserID)) {
+			return Unauthorized("Bearer token is not valid");
+		}
+
+		try {
+			var user = _db.Users.Where(u => u.userID == id).First();
+			if (user == null) {
+				return NotFound("No user found with the given userID");
+			}
+
+			var editor = _db.Users.Where(u => u.userID == editorUserID).First();
+			if (editor == null) {
+				return NotFound("No user found with the given auth credentials");
+			}
+
+			if (editor.userRole >= userRole.ADMIN) {
+				_logger.LogInformation("Unbanned user '" + user.userName + "'");
+				user.userState = userState.ACTIVE;
+				_db.SaveChanges();
+
+				return Ok();
+			}
+
+			return Unauthorized();
+		}
+		catch (Exception e) {
+			_logger.LogError("Error unbanning user: " + e.Message);
+			return StatusCode(500);
+		}
+	}
+
 	[HttpPatch]
 	[Route("admin/{id}")]
 	public ActionResult UpdateUserAdmin(int id, AdminUserEditData data) {
