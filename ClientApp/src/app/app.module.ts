@@ -23,6 +23,7 @@ import { UserListComponent } from './user-list/user-list.component';
 import { BanButtonComponent } from './actions/ban-button/ban-button.component';
 import { UnbanButtonComponent } from './actions/unban-button/unban-button.component';
 import { UserAuditPageComponent } from './user-audit-page/user-audit-page.component';
+import { ThreadAuditPageComponent } from './thread-audit-page/thread-audit-page.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { UserAuditPageComponent } from './user-audit-page/user-audit-page.compon
     UserListComponent,
     BanButtonComponent,
     UnbanButtonComponent,
-    UserAuditPageComponent
+    UserAuditPageComponent,
+    ThreadAuditPageComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -52,6 +54,7 @@ import { UserAuditPageComponent } from './user-audit-page/user-audit-page.compon
     RouterModule.forRoot([
       { path: '', component: HomePageComponent, pathMatch: 'full' },
       { path: 'thread/:id', component: ThreadViewComponent },
+      { path: 'thread/audit/:id', component: ThreadAuditPageComponent },
       { path: 'register/confirm/:token', component: RegisterConfComponent },
       { path: 'register/confirm', component: RegisterConfComponent },
       { path: 'register', component: RegisterPageComponent },

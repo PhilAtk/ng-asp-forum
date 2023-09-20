@@ -35,6 +35,59 @@ public class ThreadController : ControllerBase {
 		}
 	}
 
+	public class ThreadAuditResponse {
+		public ForumThread thread {get; set;}
+		public List<ForumThreadAudit> audits {get;set;}
+	}
+
+	[HttpGet]
+	[Route("audit/{id}")]
+	public ActionResult<ThreadAuditResponse> GetUserAudit(int id) {
+		var auth = Request.Cookies["auth"];
+		if (string.IsNullOrWhiteSpace(auth)) {
+			return BadRequest("No auth token provided");
+		}
+
+		int viewerID;
+		if (!_auth.VerifyBearerToken(auth, out viewerID)) {
+			return Unauthorized("Bearer token is not valid");
+		}
+
+		try {
+			var viewer = _db.Users.Where(u => u.userID == viewerID).First();
+			if (viewer == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
+			}
+
+			if (viewer.userRole >= userRole.ADMIN) {
+				var thread = _db.Threads
+					.Where(t => t.threadID == id)
+					.First();
+				if (thread == null) {
+					return NotFound("No thread found with the ID supplied for audit");
+				}
+
+				var audits = _db.ThreadAudits
+					.Where(a => a.thread.threadID == id)
+					.OrderByDescending(a => a.date)
+					.ToList();
+
+				var res = new ThreadAuditResponse {
+					thread = thread,
+					audits = audits
+				};
+
+				return Ok(res);
+			}
+
+			return Unauthorized();
+		}
+		catch (Exception e) {
+			_logger.LogError(e.Message);
+			return StatusCode(500);
+		}	
+	}
+
 	[HttpGet]
 	[Route("{id}")]
 	public ActionResult<ForumThread> GetThread(int id) {
@@ -149,9 +202,19 @@ public class ThreadController : ControllerBase {
 
 			if ((	editor.userID == thread.author.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
+
+					var audit = new ForumThreadAudit {
+						date = DateTime.Now,
+						thread = thread,
+						action = forumAction.EDIT,
+						info = "Previous Topic: '" + thread.topic +"'"
+					};
+					_db.Add(audit);
+
 					thread.edited = true;
 					thread.dateModified = DateTime.Now;
 					thread.topic = data.topic;
+
 					_db.SaveChanges();
 					return Ok();
 			}
@@ -211,6 +274,13 @@ public class ThreadController : ControllerBase {
 					author = author,
 					thread = thread
 				});
+
+				var audit = new ForumThreadAudit {
+					date = DateTime.Now,
+					thread = thread,
+					action = forumAction.CREATE,
+				};
+				_db.Add(audit);
 
 				_db.Add(thread);
 				_db.SaveChanges();

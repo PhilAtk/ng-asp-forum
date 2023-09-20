@@ -27,6 +27,8 @@ export class ThreadViewComponent {
 	_canEdit: boolean;
 	_editMode: boolean;
 
+	_admin: boolean;
+
 	editBuffer: string = "";
 
 	constructor(auth: AuthService, http: HttpClient, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
@@ -39,6 +41,11 @@ export class ThreadViewComponent {
 
 		this._canEdit = false;
 		this._editMode = false;
+
+		this._admin = false;
+		if (this._auth.user.userRole >= userRole.ADMIN) {
+			this._admin = true;
+		}
 	}
 
 	ngOnInit() {

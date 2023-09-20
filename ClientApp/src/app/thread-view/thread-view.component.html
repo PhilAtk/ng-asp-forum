@@ -7,6 +7,9 @@
 <ng-template #readMode>
 	<h1>{{thread.topic}}</h1>
 </ng-template>
+<span *ngIf="_admin">
+        <a [routerLink]="['/thread/audit', thread.threadID]">Audit</a>
+</span>
 
 <span *ngIf="_canEdit && !_editMode">
 	<button (click)="editThread()">Edit</button>

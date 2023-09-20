@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 public class ForumContext : DbContext
 {
 	public DbSet<ForumThread> Threads { get; set; }
+	public DbSet<ForumThreadAudit> ThreadAudits {get; set;}
 	public DbSet<ForumPost> Posts { get; set; }
 	public DbSet<ForumUser> Users { get; set; }
 	public DbSet<ForumUserAudit> UserAudits {get; set;}
@@ -24,6 +25,24 @@ public class ForumContext : DbContext
 	// TODO: Add MySQL option
 	protected override void OnConfiguring(DbContextOptionsBuilder options)
 		=> options.UseSqlite($"Data Source={DbPath}");
+}
+
+public enum forumAction {
+	CREATE,
+	EDIT
+}
+
+public class ForumThreadAudit {
+	[Key]
+	public int auditID {get; set;}
+
+	public DateTime date {get; set;}
+
+	public ForumThread thread {get; set;}
+
+	public forumAction action {get; set;}
+
+	public string? info {get; set;}
 }
 
 public class ForumThread {

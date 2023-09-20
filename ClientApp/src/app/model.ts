@@ -26,6 +26,24 @@ export interface Thread {
 	posts?: Post[]
 }
 
+export enum threadAction {
+	CREATE,
+	EDIT
+}
+
+export const threadActionMap = new Map<threadAction, string>([
+	[threadAction.CREATE, threadAction[threadAction.CREATE]],
+	[threadAction.EDIT, threadAction[threadAction.EDIT]]
+])
+
+export interface ThreadAudit {
+	auditID: number,
+	date: number,
+	thread: ThreadAudit,
+	action: threadAction,
+	info?: string,
+}
+
 export enum userRole {
 	USER,
 	VIP,
@@ -71,7 +89,7 @@ export enum userAction {
 	UNBAN
 }
 
-export const actionMap = new Map<userAction, string>([
+export const userActionMap = new Map<userAction, string>([
 	[userAction.REGISTER, userAction[userAction.REGISTER]],
 	[userAction.REGISTER_CONFIRM, userAction[userAction.REGISTER_CONFIRM]],
 	[userAction.PASS_FORGOT, userAction[userAction.PASS_FORGOT]],

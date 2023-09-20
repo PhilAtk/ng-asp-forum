@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { URL_API_USER_AUDIT } from 'src/app/urls';
-import { User, UserAudit, actionMap } from 'src/app/model';
+import { User, UserAudit, userActionMap } from 'src/app/model';
 
 interface UserAuditReponse {
 	user: User,
@@ -22,7 +22,7 @@ export class UserAuditPageComponent {
 	user = {} as User;
 	audits!: UserAudit[];
 
-	actionMap = actionMap;
+	userActionMap = userActionMap;
 	
 	constructor(http: HttpClient, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
 		this.user.userID = Number(route.snapshot.paramMap.get('id'));

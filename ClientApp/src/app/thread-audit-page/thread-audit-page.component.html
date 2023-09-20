@@ -1,4 +1,4 @@
-<h1>{{user.userName}}</h1>
+<h1>{{thread.topic}}</h1>
 
 <table>
 	<tr>
@@ -8,7 +8,7 @@
 	</tr>
 	<tr *ngFor="let audit of audits">
 		<td>{{audit.date}}</td>
-		<td>{{userActionMap.get(audit.action)}}</td>
+		<td>{{threadActionMap.get(audit.action)}}</td>
 		<td>{{audit.info}}</td>
 	</tr>
 </table>
