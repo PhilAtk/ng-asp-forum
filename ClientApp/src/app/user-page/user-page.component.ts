@@ -25,6 +25,8 @@ export class UserPageComponent {
 	_canEdit: boolean;
 	_editMode: boolean;
 
+	_admin: boolean;
+
 	editBuffer: string = "";
 
 	constructor(http: HttpClient, auth: AuthService, route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string) {
@@ -36,6 +38,11 @@ export class UserPageComponent {
 
 		this._canEdit = false;
 		this._editMode = false;
+
+		this._admin = false;
+		if (this._auth.user.userRole >= userRole.ADMIN) {
+			this._admin = true;
+		}
 	}
 
 	ngOnInit() {

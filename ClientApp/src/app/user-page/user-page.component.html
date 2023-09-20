@@ -1,10 +1,16 @@
 <h1>{{_user.userName}}</h1>
 
-<div *ngIf="_editMode; else readMode">
+<span *ngIf="_editMode; else readMode">
 	<input type="text" [(ngModel)]="editBuffer">
 	<button (click)="saveBio()">Save</button>
 	<button (click)="cancelEdit()">Cancel</button>
-</div>
+</span>
+
+<span *ngIf="_admin">
+        <app-ban-button *ngIf="_user.userState >= 0" [user]="_user"></app-ban-button>
+        <app-unban-button *ngIf="_user.userState == -2" [user]="_user"></app-unban-button>
+        <a [routerLink]="['/user/audit', _user.userID]">Audit</a>
+</span>
 
 <ng-template #readMode>
         <span *ngIf="_canEdit">
