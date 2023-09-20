@@ -198,45 +198,4 @@ public class UserController : ControllerBase {
 			return StatusCode(500);
 		}
 	}
-
-	[HttpPatch]
-	[Route("admin/{id}")]
-	public ActionResult UpdateUserAdmin(int id, AdminUserEditData data) {
-		var auth = Request.Cookies["auth"];
-
-		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
-		}
-
-		int editorUserID;
-		if (!_auth.VerifyBearerToken(auth, out editorUserID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
-		try {
-			var user = _db.Users.Where(u => u.userID == id).First();
-			if (user == null) {
-				return NotFound("No user found with the given userID");
-			}
-
-			var editor = _db.Users.Where(u => u.userID == editorUserID).First();
-			if (editor == null) {
-				return NotFound("No user found with the given auth credentials");
-			}
-
-			if (editor.userRole < userRole.ADMIN) {
-				return Unauthorized();
-			}
-
-			user.userState = data.state;
-			user.userRole = data.role;
-			_db.SaveChanges();
-
-			return Ok();
-		}
-		catch (Exception e) {
-			_logger.LogError("Error editing user: " + e.Message);
-			return StatusCode(500);
-		}
-	}
 }

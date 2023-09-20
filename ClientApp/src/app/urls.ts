@@ -1,5 +1,4 @@
 export const URL_API_USER = 'api/user/';
-export const URL_API_USER_ADMIN = 'api/user/admin/';
 export const URL_API_USERLIST = 'api/user'
 
 export const URL_API_USER_ACTION_BAN = 'api/user/ban/';
