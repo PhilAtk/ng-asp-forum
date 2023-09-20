@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { Thread } from 'src/app/model';
-import { URL_API_THREAD } from '../urls';
+import { URL_API_THREAD } from 'src/app/urls';
 
 @Component({
   selector: 'app-thread-list',

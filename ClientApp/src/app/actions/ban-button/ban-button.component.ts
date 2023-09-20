@@ -1,7 +1,7 @@
 import { Component, Inject, Input } from '@angular/core';
-import { User } from '../model';
+import { User } from 'src/app/model';
 import { HttpClient } from '@angular/common/http';
-import { URL_API_USER_ACTION_BAN } from '../urls';
+import { URL_API_USER_ACTION_BAN } from 'src/app/urls';
 
 interface BanData {
 	reason: string,

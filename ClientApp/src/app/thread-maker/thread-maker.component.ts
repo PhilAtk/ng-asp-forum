@@ -1,8 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../auth.service';
-import { Thread, userState } from '../model';
-import { URL_API_THREAD } from '../urls';
+import { AuthService } from 'src/app/auth.service';
+import { Thread, userState } from 'src/app/model';
+import { URL_API_THREAD } from 'src/app/urls';
 
 interface ThreadCreateData {
 	topic: string;

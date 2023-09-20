@@ -20,7 +20,7 @@ import { RegisterConfComponent } from './register-conf/register-conf.component';
 import { PostComponent } from './thread-view/post/post.component';
 import { UserPageComponent } from './user-page/user-page.component';
 import { UserListComponent } from './user-list/user-list.component';
-import { BanButtonComponent } from './ban-button/ban-button.component';
+import { BanButtonComponent } from './actions/ban-button/ban-button.component';
 
 @NgModule({
   declarations: [

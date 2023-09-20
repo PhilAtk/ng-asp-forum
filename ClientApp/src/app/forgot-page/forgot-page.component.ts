@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
-import { URL_API_PASS_FORGOT } from '../urls';
+import { URL_API_PASS_FORGOT } from 'src/app/urls';
 
 interface ForgotData {
 	email: string

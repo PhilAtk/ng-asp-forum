@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { User, userRole } from '../model';
-import { AuthService } from '../auth.service';
-import { URL_API_USER } from '../urls';
+import { User, userRole } from 'src/app/model';
+import { AuthService } from 'src/app/auth.service';
+import { URL_API_USER } from 'src/app/urls';
 
 interface UserEditData {
 	bio: string,

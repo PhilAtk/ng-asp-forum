@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Thread, userRole } from 'src/app/model';
-import { AuthService } from '../auth.service';
-import { URL_API_THREAD } from '../urls';
+import { AuthService } from 'src/app/auth.service';
+import { URL_API_THREAD } from 'src/app/urls';
 
 interface ThreadEditData {
 	topic: string,

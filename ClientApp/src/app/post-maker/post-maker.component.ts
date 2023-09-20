@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService } from '../auth.service';
-import { userState } from '../model';
-import { URL_API_POST } from '../urls';
+import { AuthService } from 'src/app/auth.service';
+import { userState } from 'src/app/model';
+import { URL_API_POST } from 'src/app/urls';
 
 interface PostCreateData {
 	threadID: number;

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../auth.service';
-import { userRole } from '../model';
+import { AuthService } from 'src/app/auth.service';
+import { userRole } from 'src/app/model';
 
 @Component({
 	selector: 'app-nav-menu',

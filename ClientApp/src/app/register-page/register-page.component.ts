@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
-import { URL_API_REG_REQ } from '../urls';
+import { URL_API_REG_REQ } from 'src/app/urls';
 
 interface RegisterData {
 	username: string;

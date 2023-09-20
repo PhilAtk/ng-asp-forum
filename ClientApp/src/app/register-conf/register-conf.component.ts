@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { URL_API_REG_CONF } from '../urls';
+import { URL_API_REG_CONF } from 'src/app/urls';
 
 interface RegisterConfData {
 	token: string | null;

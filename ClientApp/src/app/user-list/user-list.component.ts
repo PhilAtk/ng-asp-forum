@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
-import { User, roleMap, stateMap, userRole, userState } from '../model';
-import { URL_API_USERLIST, URL_API_USER_ADMIN } from '../urls';
+import { User, roleMap, stateMap, userRole, userState } from 'src/app/model';
+import { URL_API_USERLIST, URL_API_USER_ADMIN } from 'src/app/urls';
 
 interface AdminUserEditData {
 	role: userRole;

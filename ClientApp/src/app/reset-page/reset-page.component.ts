@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { URL_API_PASS_RESET } from '../urls';
+import { URL_API_PASS_RESET } from 'src/app/urls';
 
 interface ResetData {
 	password: string;

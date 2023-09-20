@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
-import { AuthService } from '../auth.service';
-import { LoginResult } from '../model';
-import { URL_API_LOGIN } from '../urls';
+import { AuthService } from 'src/app/auth.service';
+import { LoginResult } from 'src/app/model';
+import { URL_API_LOGIN } from 'src/app/urls';
 
 interface LoginData {
 	username: string;
