@@ -22,7 +22,7 @@ import { UserPageComponent } from './user-page/user-page.component';
 import { UserListComponent } from './user-list/user-list.component';
 import { BanButtonComponent } from './actions/ban-button/ban-button.component';
 import { UnbanButtonComponent } from './actions/unban-button/unban-button.component';
-import { AuditPageComponent } from './audit-page/audit-page.component';
+import { UserAuditPageComponent } from './user-audit-page/user-audit-page.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +43,7 @@ import { AuditPageComponent } from './audit-page/audit-page.component';
     UserListComponent,
     BanButtonComponent,
     UnbanButtonComponent,
-    AuditPageComponent
+    UserAuditPageComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -57,7 +57,7 @@ import { AuditPageComponent } from './audit-page/audit-page.component';
       { path: 'register', component: RegisterPageComponent },
       { path: 'user/:id', component: UserPageComponent },
       { path: 'userlist', component: UserListComponent},
-      { path: 'user/audit/:id', component: AuditPageComponent},
+      { path: 'user/audit/:id', component: UserAuditPageComponent},
       { path: 'reset/:token', component: ResetPageComponent },
       { path: 'forgot', component: ForgotPageComponent },
       { path: 'login', component: LoginBoxComponent }

@@ -10,11 +10,11 @@ interface UserAuditReponse {
 }
 
 @Component({
-	selector: 'app-audit-page',
-	templateUrl: './audit-page.component.html',
-	styleUrls: ['./audit-page.component.css']
+	selector: 'app-user-audit-page',
+	templateUrl: './user-audit-page.component.html',
+	styleUrls: ['./user-audit-page.component.css']
 })
-export class AuditPageComponent {
+export class UserAuditPageComponent {
 
 	_http: HttpClient;
 	_baseUrl: string;
