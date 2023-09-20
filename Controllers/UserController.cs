@@ -18,14 +18,14 @@ public class UserController : ControllerBase {
 		_auth = auth;
 	}
 
-	public class AuditResponse {
+	public class UserAuditResponse {
 		public ForumUser user {get; set;}
 		public List<ForumUserAudit> audits {get; set;}
 	}
 
 	[HttpGet]
 	[Route("audit/{id}")]
-	public ActionResult<AuditResponse> GetUserAudit(int id) {
+	public ActionResult<UserAuditResponse> GetUserAudit(int id) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
@@ -55,7 +55,7 @@ public class UserController : ControllerBase {
 					.OrderByDescending(a => a.date)
 					.ToList();
 
-				var res = new AuditResponse {
+				var res = new UserAuditResponse {
 					user = user,
 					audits = audits
 				};
