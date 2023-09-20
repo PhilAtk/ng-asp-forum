@@ -7,7 +7,9 @@
 	</span>
 </div>
 
-
+<span *ngIf="_admin">
+        <a [routerLink]="['/post/audit', post.postID]">Audit</a>
+</span>
 <div *ngIf="_editMode; else readMode">
 	<input type="text" [(ngModel)]="editBuffer">
 	<button (click)="savePost()">Save</button>

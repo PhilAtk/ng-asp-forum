@@ -10,6 +10,7 @@ public class ForumContext : DbContext
 	public DbSet<ForumThread> Threads { get; set; }
 	public DbSet<ForumThreadAudit> ThreadAudits {get; set;}
 	public DbSet<ForumPost> Posts { get; set; }
+	public DbSet<ForumPostAudit> PostAudits {get; set;}
 	public DbSet<ForumUser> Users { get; set; }
 	public DbSet<ForumUserAudit> UserAudits {get; set;}
 
@@ -27,7 +28,7 @@ public class ForumContext : DbContext
 		=> options.UseSqlite($"Data Source={DbPath}");
 }
 
-public enum forumAction {
+public enum threadAction {
 	CREATE,
 	EDIT
 }
@@ -40,7 +41,7 @@ public class ForumThreadAudit {
 
 	public ForumThread thread {get; set;}
 
-	public forumAction action {get; set;}
+	public threadAction action {get; set;}
 
 	public string? info {get; set;}
 }
@@ -58,6 +59,24 @@ public class ForumThread {
 	public string? topic {get; set;}
 
 	public ICollection<ForumPost> posts {get; set;}
+}
+
+public enum postAction {
+	CREATE,
+	EDIT
+}
+
+public class ForumPostAudit {
+	[Key]
+	public int auditID {get; set;}
+
+	public DateTime date {get; set;}
+
+	public ForumPost post {get; set;}
+
+	public postAction action {get; set;}
+
+	public string? info {get; set;}
 }
 
 public class ForumPost {

@@ -206,7 +206,7 @@ public class ThreadController : ControllerBase {
 					var audit = new ForumThreadAudit {
 						date = DateTime.Now,
 						thread = thread,
-						action = forumAction.EDIT,
+						action = threadAction.EDIT,
 						info = "Previous Topic: '" + thread.topic +"'"
 					};
 					_db.Add(audit);
@@ -278,7 +278,7 @@ public class ThreadController : ControllerBase {
 				var audit = new ForumThreadAudit {
 					date = DateTime.Now,
 					thread = thread,
-					action = forumAction.CREATE,
+					action = threadAction.CREATE,
 				};
 				_db.Add(audit);
 

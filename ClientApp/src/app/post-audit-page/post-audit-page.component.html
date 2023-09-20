@@ -1,0 +1,15 @@
+<h1>{{post.author.userName}}</h1>
+<h2>{{post.text}}</h2>
+
+<table>
+	<tr>
+		<th>Date</th>
+		<th>Action</th>
+		<th>Info</th>
+	</tr>
+	<tr *ngFor="let audit of audits">
+		<td>{{audit.date}}</td>
+		<td>{{postActionMap.get(audit.action)}}</td>
+		<td>{{audit.info}}</td>
+	</tr>
+</table>

@@ -6,6 +6,7 @@ export const URL_API_USER_ACTION_BAN = 'api/user/ban/';
 export const URL_API_USER_ACTION_UNBAN = 'api/user/unban/';
 
 export const URL_API_POST = 'api/post/'
+export const URL_API_POST_AUDIT = 'api/post/audit/';
 
 export const URL_API_THREAD = 'api/thread/';
 export const URL_API_THREAD_AUDIT = 'api/thread/audit/';

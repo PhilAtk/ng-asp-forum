@@ -16,6 +16,24 @@ export interface Post {
 	text: string
 }
 
+export enum postAction {
+	CREATE,
+	EDIT
+}
+
+export const postActionMap = new Map<postAction, string>([
+	[postAction.CREATE, postAction[postAction.CREATE]],
+	[postAction.EDIT, postAction[postAction.EDIT]]
+])
+
+export interface PostAudit {
+	auditID: number,
+	date: number,
+	post: Post,
+	action: postAction,
+	info?: string,
+}
+
 export interface Thread {
 	threadID: number,
 	author: User,
@@ -39,7 +57,7 @@ export const threadActionMap = new Map<threadAction, string>([
 export interface ThreadAudit {
 	auditID: number,
 	date: number,
-	thread: ThreadAudit,
+	thread: Thread,
 	action: threadAction,
 	info?: string,
 }

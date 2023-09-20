@@ -24,52 +24,55 @@ import { BanButtonComponent } from './actions/ban-button/ban-button.component';
 import { UnbanButtonComponent } from './actions/unban-button/unban-button.component';
 import { UserAuditPageComponent } from './user-audit-page/user-audit-page.component';
 import { ThreadAuditPageComponent } from './thread-audit-page/thread-audit-page.component';
+import { PostAuditPageComponent } from './post-audit-page/post-audit-page.component';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    NavMenuComponent,
-    HomePageComponent,
-    ThreadListComponent,
-    ThreadViewComponent,
-    ThreadMakerComponent,
-    PostMakerComponent,
-    LoginBoxComponent,
-    RegisterPageComponent,
-    RegisterConfComponent,
-    ResetPageComponent,
-    ForgotPageComponent,
-    PostComponent,
-    UserPageComponent,
-    UserListComponent,
-    BanButtonComponent,
-    UnbanButtonComponent,
-    UserAuditPageComponent,
-    ThreadAuditPageComponent
-  ],
-  imports: [
-    BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
-    HttpClientModule,
-    FormsModule,
-    RouterModule.forRoot([
-      { path: '', component: HomePageComponent, pathMatch: 'full' },
-      { path: 'thread/:id', component: ThreadViewComponent },
-      { path: 'thread/audit/:id', component: ThreadAuditPageComponent },
-      { path: 'register/confirm/:token', component: RegisterConfComponent },
-      { path: 'register/confirm', component: RegisterConfComponent },
-      { path: 'register', component: RegisterPageComponent },
-      { path: 'user/:id', component: UserPageComponent },
-      { path: 'userlist', component: UserListComponent},
-      { path: 'user/audit/:id', component: UserAuditPageComponent},
-      { path: 'reset/:token', component: ResetPageComponent },
-      { path: 'forgot', component: ForgotPageComponent },
-      { path: 'login', component: LoginBoxComponent }
-    ], {
-      anchorScrolling: 'enabled',
-      onSameUrlNavigation: 'ignore'
-    })
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+	declarations: [
+		AppComponent,
+		NavMenuComponent,
+		HomePageComponent,
+		ThreadListComponent,
+		ThreadViewComponent,
+		ThreadMakerComponent,
+		PostMakerComponent,
+		LoginBoxComponent,
+		RegisterPageComponent,
+		RegisterConfComponent,
+		ResetPageComponent,
+		ForgotPageComponent,
+		PostComponent,
+		UserPageComponent,
+		UserListComponent,
+		BanButtonComponent,
+		UnbanButtonComponent,
+		UserAuditPageComponent,
+		ThreadAuditPageComponent,
+		PostAuditPageComponent
+	],
+	imports: [
+		BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
+		HttpClientModule,
+		FormsModule,
+		RouterModule.forRoot([
+			{ path: '', component: HomePageComponent, pathMatch: 'full' },
+			{ path: 'thread/:id', component: ThreadViewComponent },
+			{ path: 'thread/audit/:id', component: ThreadAuditPageComponent },
+			{ path: 'post/audit/:id', component: PostAuditPageComponent},
+			{ path: 'register/confirm/:token', component: RegisterConfComponent },
+			{ path: 'register/confirm', component: RegisterConfComponent },
+			{ path: 'register', component: RegisterPageComponent },
+			{ path: 'user/:id', component: UserPageComponent },
+			{ path: 'userlist', component: UserListComponent},
+			{ path: 'user/audit/:id', component: UserAuditPageComponent},
+			{ path: 'reset/:token', component: ResetPageComponent },
+			{ path: 'forgot', component: ForgotPageComponent },
+			{ path: 'login', component: LoginBoxComponent }
+		], {
+			anchorScrolling: 'enabled',
+			onSameUrlNavigation: 'ignore'
+		})
+	],
+	providers: [],
+	bootstrap: [AppComponent]
 })
 export class AppModule { }

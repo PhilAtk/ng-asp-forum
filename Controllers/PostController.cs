@@ -16,6 +16,59 @@ public class PostController : ControllerBase {
 		_auth = auth;
 	}
 
+	public class PostAuditResponse {
+		public ForumPost post {get; set;}
+		public List<ForumPostAudit> audits {get;set;}
+	}
+
+	[HttpGet]
+	[Route("audit/{id}")]
+	public ActionResult<PostAuditResponse> GetUserAudit(int id) {
+		var auth = Request.Cookies["auth"];
+		if (string.IsNullOrWhiteSpace(auth)) {
+			return BadRequest("No auth token provided");
+		}
+
+		int viewerID;
+		if (!_auth.VerifyBearerToken(auth, out viewerID)) {
+			return Unauthorized("Bearer token is not valid");
+		}
+
+		try {
+			var viewer = _db.Users.Where(u => u.userID == viewerID).First();
+			if (viewer == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
+			}
+
+			if (viewer.userRole >= userRole.ADMIN) {
+				var post = _db.Posts
+					.Where(p => p.postID == id)
+					.First();
+				if (post == null) {
+					return NotFound("No post found with the ID supplied for audit");
+				}
+
+				var audits = _db.PostAudits
+					.Where(a => a.post.postID == id)
+					.OrderByDescending(a => a.date)
+					.ToList();
+
+				var res = new PostAuditResponse {
+					post = post,
+					audits = audits
+				};
+
+				return Ok(res);
+			}
+
+			return Unauthorized();
+		}
+		catch (Exception e) {
+			_logger.LogError(e.Message);
+			return StatusCode(500);
+		}	
+	}
+
 	[HttpDelete]
 	[Route("{id}")]
 	public IActionResult Delete(int id) {
@@ -103,6 +156,14 @@ public class PostController : ControllerBase {
 
 			if ((	editor.userID == post.author.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
+					var audit = new ForumPostAudit {
+						date = DateTime.Now,
+						post = post,
+						action = postAction.EDIT,
+						info = "Previous Text: '" + post.text +"'"
+					};
+					_db.Add(audit);
+
 					post.edited = true;
 					post.dateModified = DateTime.Now;
 					post.text = data.text;
@@ -161,6 +222,13 @@ public class PostController : ControllerBase {
 					thread = thread,
 					edited = false
 				};
+
+				var audit = new ForumPostAudit {
+					date = DateTime.Now,
+					post = post,
+					action = postAction.CREATE,
+				};
+				_db.Add(audit);
 
 				_db.Add(post);
 				_db.SaveChanges();
