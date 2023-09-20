@@ -1,0 +1,15 @@
+span.ACTIVE {
+	color: green;
+}
+
+span.BANNED {
+	color: red;
+}
+
+span.VIP {
+	color: blue;
+}
+
+span.SYSOP {
+	color: purple;
+}
