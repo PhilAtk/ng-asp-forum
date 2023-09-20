@@ -22,6 +22,7 @@ import { UserPageComponent } from './user-page/user-page.component';
 import { UserListComponent } from './user-list/user-list.component';
 import { BanButtonComponent } from './actions/ban-button/ban-button.component';
 import { UnbanButtonComponent } from './actions/unban-button/unban-button.component';
+import { AuditPageComponent } from './audit-page/audit-page.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { UnbanButtonComponent } from './actions/unban-button/unban-button.compon
     UserPageComponent,
     UserListComponent,
     BanButtonComponent,
-    UnbanButtonComponent
+    UnbanButtonComponent,
+    AuditPageComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -55,6 +57,7 @@ import { UnbanButtonComponent } from './actions/unban-button/unban-button.compon
       { path: 'register', component: RegisterPageComponent },
       { path: 'user/:id', component: UserPageComponent },
       { path: 'userlist', component: UserListComponent},
+      { path: 'user/audit/:id', component: AuditPageComponent},
       { path: 'reset/:token', component: ResetPageComponent },
       { path: 'forgot', component: ForgotPageComponent },
       { path: 'login', component: LoginBoxComponent }

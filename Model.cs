@@ -10,6 +10,7 @@ public class ForumContext : DbContext
 	public DbSet<ForumThread> Threads { get; set; }
 	public DbSet<ForumPost> Posts { get; set; }
 	public DbSet<ForumUser> Users { get; set; }
+	public DbSet<ForumUserAudit> UserAudits {get; set;}
 
 	public string DbPath { get; }
 
@@ -89,4 +90,26 @@ public class ForumUser {
 	public userRole userRole {get; set;}
 
 	public string? bio {get; set;}
+}
+
+public enum userAction {
+	REGISTER,
+	REGISTER_CONFIRM,
+	PASS_FORGOT,
+	PASS_RESET,
+	BAN,
+	UNBAN
+}
+
+public class ForumUserAudit {
+	[Key]
+	public int auditID {get; set;}
+
+	public DateTime date {get; set;}
+
+	public ForumUser user {get; set;}
+
+	public userAction action {get; set;}
+
+	public string? info {get; set;}
 }

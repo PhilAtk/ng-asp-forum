@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
-import { User, roleMap, stateMap, userRole, userState } from 'src/app/model';
+import { User, roleMap, stateMap } from 'src/app/model';
 import { URL_API_USERLIST } from 'src/app/urls';
 
 @Component({

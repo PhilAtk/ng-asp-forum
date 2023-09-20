@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using ng_asp_forum.Migrations;
 
 namespace asptest.Controllers;
 
@@ -15,6 +16,59 @@ public class UserController : ControllerBase {
 		_logger = logger;
 		_db = db;
 		_auth = auth;
+	}
+
+	public class AuditResponse {
+		public ForumUser user {get; set;}
+		public List<ForumUserAudit> audits {get; set;}
+	}
+
+	[HttpGet]
+	[Route("audit/{id}")]
+	public ActionResult<AuditResponse> GetUserAudit(int id) {
+		var auth = Request.Cookies["auth"];
+		if (string.IsNullOrWhiteSpace(auth)) {
+			return BadRequest("No auth token provided");
+		}
+
+		int viewerID;
+		if (!_auth.VerifyBearerToken(auth, out viewerID)) {
+			return Unauthorized("Bearer token is not valid");
+		}
+
+		try {
+			var viewer = _db.Users.Where(u => u.userID == viewerID).First();
+			if (viewer == null) {
+				return NotFound("No user found with the ID supplied by bearer token");
+			}
+
+			if (viewer.userRole >= userRole.ADMIN) {
+				var user = _db.Users
+					.Where(u => u.userID == id)
+					.First();
+				if (user == null) {
+					return NotFound("No user found with the ID supplied for audit");
+				}
+
+				var audits = _db.UserAudits
+					.Where(a => a.user.userID == id)
+					.OrderByDescending(a => a.date)
+					.ToList();
+
+				var res = new AuditResponse {
+					user = user,
+					audits = audits
+				};
+
+				return Ok(res);
+			}
+
+			return Unauthorized();
+		}
+		catch (Exception e) {
+			_logger.LogError(e.Message);
+			return StatusCode(500);
+		}	
 	}
 
 	[HttpGet]
@@ -142,8 +196,15 @@ public class UserController : ControllerBase {
 			}
 
 			if (editor.userRole >= userRole.ADMIN) {
-				// TODO: Use data.reason
-				_logger.LogInformation("Banned user '" + user.userName + "' for reason: " + data.reason);
+
+				var audit = new ForumUserAudit {
+					date = DateTime.Now,
+					user = user,
+					action = userAction.BAN,
+					info = "Reason: " + data.reason
+				};
+				_db.Add(audit);
+				
 				user.userState = userState.BANNED;
 				_db.SaveChanges();
 
@@ -184,7 +245,14 @@ public class UserController : ControllerBase {
 			}
 
 			if (editor.userRole >= userRole.ADMIN) {
-				_logger.LogInformation("Unbanned user '" + user.userName + "'");
+				
+				var audit = new ForumUserAudit {
+					date = DateTime.Now,
+					user = user,
+					action = userAction.UNBAN,
+				};
+				_db.Add(audit);
+
 				user.userState = userState.ACTIVE;
 				_db.SaveChanges();
 

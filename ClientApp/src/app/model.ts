@@ -61,3 +61,29 @@ export interface User {
 	userRole: userRole,
 	bio: string
 }
+
+export enum userAction {
+	REGISTER,
+	REGISTER_CONFIRM,
+	PASS_FORGOT,
+	PASS_RESET,
+	BAN,
+	UNBAN
+}
+
+export const actionMap = new Map<userAction, string>([
+	[userAction.REGISTER, userAction[userAction.REGISTER]],
+	[userAction.REGISTER_CONFIRM, userAction[userAction.REGISTER_CONFIRM]],
+	[userAction.PASS_FORGOT, userAction[userAction.PASS_FORGOT]],
+	[userAction.PASS_RESET, userAction[userAction.PASS_RESET]],
+	[userAction.BAN, userAction[userAction.BAN]],
+	[userAction.UNBAN, userAction[userAction.UNBAN]]
+])
+
+export interface UserAudit {
+	auditID: number,
+	date: number,
+	user: User,
+	action: userAction,
+	info?: string,
+}

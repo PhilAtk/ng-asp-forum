@@ -109,6 +109,13 @@ public class AccountController : ControllerBase {
 		var resetCode = _auth.GetRandom6charCode();
 
 		try {
+			var audit = new ForumUserAudit {
+				date = DateTime.Now,
+				user = user,
+				action = userAction.PASS_FORGOT,
+			};
+			_db.Add(audit);
+
 			user.code = resetCode;
 			_db.SaveChanges();
 
@@ -150,6 +157,14 @@ public class AccountController : ControllerBase {
 			// Update the password
 			user.password = _auth.Hash(data.password);
 			user.code = null;
+
+			var audit = new ForumUserAudit {
+				date = DateTime.Now,
+				user = user,
+				action = userAction.PASS_RESET,
+			};
+			_db.Add(audit);
+
 			_db.SaveChanges();
 		}
 		catch (Exception e) {
@@ -167,8 +182,8 @@ public class AccountController : ControllerBase {
 	};
 
 	[HttpPost]
-	[Route("request")]
-	public IActionResult RegisterRequest(RegisterData data) {
+	[Route("register/request")]
+	public IActionResult RequestRegister(RegisterData data) {
 
 		if (string.IsNullOrWhiteSpace(data.username)) {
 			return BadRequest("No username provided");
@@ -202,8 +217,15 @@ public class AccountController : ControllerBase {
 				userRole = userRole.USER,
 				code = _auth.GetRandom6charCode()
 			};
-
 			_db.Add(user);
+
+			var audit = new ForumUserAudit {
+				date = DateTime.Now,
+				user = user,
+				action = userAction.REGISTER,
+			};
+			_db.Add(audit);
+
 			_db.SaveChanges();
 
 			_email.sendRegistrationConfirmation(user.email, user.code);
@@ -222,8 +244,8 @@ public class AccountController : ControllerBase {
 	};
 
 	[HttpPost]
-	[Route("confirm")]
-	public IActionResult VerifyRegister(RegisterConfData data) {
+	[Route("register/confirm")]
+	public IActionResult ConfirmRegistration(RegisterConfData data) {
 
 		if (data.token == null) {
 			return BadRequest("No token provided for validation");
@@ -236,6 +258,13 @@ public class AccountController : ControllerBase {
 				// We shouldn't be here
 				return BadRequest();
 			}
+
+			var audit = new ForumUserAudit {
+				date = DateTime.Now,
+				user = user,
+				action = userAction.REGISTER_CONFIRM,
+			};
+			_db.Add(audit);
 
 			user.userState = userState.ACTIVE;
 			user.code = null;

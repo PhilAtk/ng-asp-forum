@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ng_asp_forum.Migrations
 {
     [DbContext(typeof(ForumContext))]
-    partial class ForumContextModelSnapshot : ModelSnapshot
+    [Migration("20230920152329_UserAudits")]
+    partial class UserAudits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.9");
@@ -109,31 +112,6 @@ namespace ng_asp_forum.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ForumUserAudit", b =>
-                {
-                    b.Property<int>("auditID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("action")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("date")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("info")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("userID")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("auditID");
-
-                    b.HasIndex("userID");
-
-                    b.ToTable("UserAudits");
-                });
-
             modelBuilder.Entity("ForumPost", b =>
                 {
                     b.HasOne("ForumUser", "author")
@@ -158,17 +136,6 @@ namespace ng_asp_forum.Migrations
                         .IsRequired();
 
                     b.Navigation("author");
-                });
-
-            modelBuilder.Entity("ForumUserAudit", b =>
-                {
-                    b.HasOne("ForumUser", "user")
-                        .WithMany()
-                        .HasForeignKey("userID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("ForumThread", b =>

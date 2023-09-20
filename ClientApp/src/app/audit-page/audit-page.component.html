@@ -1,0 +1,14 @@
+<h1>{{user.userName}}</h1>
+
+<table>
+	<tr>
+		<th>Date</th>
+		<th>Action</th>
+		<th>Info</th>
+	</tr>
+	<tr *ngFor="let audit of audits">
+		<td>{{audit.date}}</td>
+		<td>{{actionMap.get(audit.action)}}</td>
+		<td>{{audit.info}}</td>
+	</tr>
+</table>

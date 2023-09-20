@@ -7,7 +7,6 @@
 		<th>Actions</th>
 	</tr>
 	<tr *ngFor="let user of users; index as i">
-		<style>td {outline: solid black 1px;}</style>
 		<td>{{user.userID}}</td>
 		<td><a class="nav-link text-dark" [routerLink]="['/user', user.userID]">{{user.userName}}</a></td>
 		
@@ -20,6 +19,7 @@
 		<td>
 			<app-ban-button *ngIf="user.userState >= 0" [user]="user"></app-ban-button>
 			<app-unban-button *ngIf="user.userState == -2" [user]="user"></app-unban-button>
+			<a [routerLink]="['/user/audit', user.userID]">Audit</a>
 		</td>
 	</tr>
 </table>

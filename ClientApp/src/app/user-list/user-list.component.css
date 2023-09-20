@@ -13,3 +13,7 @@ span.VIP {
 span.SYSOP {
 	color: purple;
 }
+
+td {
+	outline: solid black 1px;
+}

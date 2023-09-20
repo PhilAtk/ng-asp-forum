@@ -1,5 +1,6 @@
 export const URL_API_USER = 'api/user/';
 export const URL_API_USERLIST = 'api/user'
+export const URL_API_USER_AUDIT = 'api/user/audit/'
 
 export const URL_API_USER_ACTION_BAN = 'api/user/ban/';
 export const URL_API_USER_ACTION_UNBAN = 'api/user/unban/';
