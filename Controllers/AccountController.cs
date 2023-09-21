@@ -90,7 +90,6 @@ public class AccountController : ControllerBase {
 	[Route("password/forgot")]
 	public IActionResult PasswordResetRequest(ForgotData data) {
 		var user = _db.Users.Where(u => u.email == data.email).First();
-
 		if (user == null) {
 			return NotFound();
 		}

@@ -14,18 +14,7 @@ public class ForumContext : DbContext
 	public DbSet<ForumUser> Users { get; set; }
 	public DbSet<ForumUserAudit> UserAudits {get; set;}
 
-	public string DbPath { get; }
-
-	public ForumContext()
-	{
-		var folder = Environment.SpecialFolder.LocalApplicationData;
-		var path = Environment.GetFolderPath(folder);
-		DbPath = Path.Join(path, "forum.db");
-	}
-
-	// TODO: Add MySQL option
-	protected override void OnConfiguring(DbContextOptionsBuilder options)
-		=> options.UseSqlite($"Data Source={DbPath}");
+	public ForumContext(DbContextOptions<ForumContext> options) : base(options) {}
 }
 
 public enum threadAction {
@@ -34,7 +23,7 @@ public enum threadAction {
 }
 
 public class ForumThreadAudit {
-	[Key]
+	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int auditID {get; set;}
 
 	public DateTime date {get; set;}
@@ -47,7 +36,7 @@ public class ForumThreadAudit {
 }
 
 public class ForumThread {
-	[Key]
+	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int threadID {get; set;}
 
 	public ForumUser author {get; set;}
@@ -67,7 +56,7 @@ public enum postAction {
 }
 
 public class ForumPostAudit {
-	[Key]
+	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int auditID {get; set;}
 
 	public DateTime date {get; set;}
@@ -80,7 +69,7 @@ public class ForumPostAudit {
 }
 
 public class ForumPost {
-	[Key]
+	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int postID {get; set;}
 
 	[JsonIgnore]
@@ -110,7 +99,7 @@ public enum userRole {
 
 // TODO: Separate Account and Profile information
 public class ForumUser {
-	[Key]
+	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int userID {get; set;}
 
 	public string? userName {get; set;}
@@ -140,7 +129,7 @@ public enum userAction {
 }
 
 public class ForumUserAudit {
-	[Key]
+	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int auditID {get; set;}
 
 	public DateTime date {get; set;}

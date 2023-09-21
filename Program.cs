@@ -11,7 +11,13 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddTransient<ForumContext>();
+var serverVersion = new MySqlServerVersion(new Version(8, 0));
+builder.Services.AddDbContext<ForumContext>(options => {
+    options
+        .UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), serverVersion)
+        .LogTo(Console.WriteLine, LogLevel.Information);
+});
+
 builder.Services.AddTransient<ForumAuthenticator>();
 builder.Services.AddTransient<ForumEmail>();
 

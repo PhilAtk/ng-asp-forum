@@ -1,8 +1,5 @@
 version: "3.9"
 
-volumes:
-    db:
-
 services:
     ng-asp-forum:
         image: ng-asp-forum
@@ -11,10 +8,10 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        
-        volumes:
-            - db:/root/.local/share
 
+        depends_on:
+            - mysql
+        
         environment:
             - EMAIL_USERNAME
             - EMAIL_PASSWORD
@@ -22,9 +19,28 @@ services:
             - AUTH_ISSUER
             - AUTH_AUDIENCE
             - AUTH_SECRET
+            - ConnectionStrings__DefaultConnection
 
         ports:
             - 5000:5000
             - 8080:8080
 
         network_mode: "host"
+
+    mysql:
+        image: mysql:8.1
+
+        command: --sql_mode=""
+
+        volumes:
+            - mysql:/var/lib/mysql
+
+        environment:
+            - MYSQL_ROOT_PASSWORD
+            - MYSQL_DATABASE
+
+        ports:
+            - 3306:3306
+
+volumes:
+    mysql:

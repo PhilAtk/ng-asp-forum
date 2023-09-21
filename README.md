@@ -16,6 +16,12 @@ Before attempting to run, the following environment variables must be set:
     AUTH_ISSUER # Issuer for Auth Tokens
     AUTH_AUDIENCE # Audience for Auth Tokens
     AUTH_SECRET # Secret for encryption
+
+    ConnectionStrings__DefaultConnection # e.g. 'server=localhost;user=root;password=your_pass;database=ef'
+
+    MYSQL_ROOT_PASSWORD # your_pass, if using the example connection string
+    MYSQL_DATABASE # ef, if using the example connection string
+
 ```
 
 ## Building and Hosting
