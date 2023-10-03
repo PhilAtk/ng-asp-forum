@@ -6,13 +6,13 @@ namespace asptest.Controllers;
 [Route("api/[controller]")]
 public class AccountController : ControllerBase {
 	private readonly ILogger<AccountController> _logger;
-	private ForumContext _db;
+	private UserRepository _userRepo;
 	private ForumAuthenticator _auth;
 	private ForumEmail _email;
 
-	public AccountController(ILogger<AccountController> logger, ForumContext db, ForumAuthenticator auth, ForumEmail email) {
+	public AccountController(ILogger<AccountController> logger, UserRepository userRepo, ForumAuthenticator auth, ForumEmail email) {
 		_logger = logger;
-		_db = db;
+		_userRepo = userRepo;
 		_auth = auth;
 		_email = email;
 	}
@@ -33,14 +33,15 @@ public class AccountController : ControllerBase {
 	[HttpPost]
 	[Route("login")]
 	public IActionResult Login(LoginData data) {
-		try {
-			var user = _db.Users.Where(u => u.userName == data.username).First();
+		if (string.IsNullOrWhiteSpace(data.password) || string.IsNullOrWhiteSpace(data.username)) {
+			return BadRequest();
+		}
 
-			if (
-				user == null || 
-				string.IsNullOrWhiteSpace(data.password) || 
-				string.IsNullOrWhiteSpace(data.username)) {
-					return BadRequest();
+		try {
+			var user = _userRepo.GetUserByUsername(data.username);
+
+			if (user == null) {
+				return BadRequest();
 			}
 
 			if (string.IsNullOrWhiteSpace(user.password)) {
@@ -89,7 +90,11 @@ public class AccountController : ControllerBase {
 	[HttpPost]
 	[Route("password/forgot")]
 	public IActionResult PasswordResetRequest(ForgotData data) {
-		var user = _db.Users.Where(u => u.email == data.email).First();
+		if (data.email == null) {
+			return BadRequest("No email provided for password reset");
+		}
+
+		var user = _userRepo.GetUserByEmail(data.email);
 		if (user == null) {
 			return NotFound();
 		}
@@ -108,15 +113,7 @@ public class AccountController : ControllerBase {
 		var resetCode = _auth.GetRandom6charCode();
 
 		try {
-			var audit = new ForumUserAudit {
-				date = DateTime.Now,
-				user = user,
-				action = userAction.PASS_FORGOT,
-			};
-			_db.Add(audit);
-
-			user.code = resetCode;
-			_db.SaveChanges();
+			_userRepo.SetUserCode(user, resetCode);
 
 			_email.sendPasswordReset(user.email, resetCode);
 		}
@@ -146,25 +143,15 @@ public class AccountController : ControllerBase {
 		}
 
 		// Find the user for this code
-		var user = _db.Users.Where(u => u.code == data.token).First();
+		var user = _userRepo.GetUserByCode(data.token);
 
 		if (user == null) {
 			return NotFound();
 		}
 
 		try {		
-			// Update the password
-			user.password = _auth.Hash(data.password);
-			user.code = null;
-
-			var audit = new ForumUserAudit {
-				date = DateTime.Now,
-				user = user,
-				action = userAction.PASS_RESET,
-			};
-			_db.Add(audit);
-
-			_db.SaveChanges();
+			var hashedPass = _auth.Hash(data.password);
+			_userRepo.SetUserHashedPass(user, hashedPass);
 		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);
@@ -197,18 +184,17 @@ public class AccountController : ControllerBase {
 		}
 
 		try {
-			int user_count = 0;
-			user_count += _db.Users.Where(u => u.userName == data.username).Count();
-			if (user_count > 0) {
+			var user = _userRepo.GetUserByUsername(data.username);
+			if (user != null) {
 				return BadRequest("Username already exists");
 			}
 
-			user_count += _db.Users.Where(u => u.email == data.email).Count();
-			if (user_count > 0) {
+			user = _userRepo.GetUserByEmail(data.email);
+			if (user != null) {
 				return BadRequest("Email already in use");
 			}
 
-			var user = new ForumUser{
+			user = new ForumUser{
 				userName = data.username,
 				password = _auth.Hash(data.password),
 				email = data.email,
@@ -216,16 +202,8 @@ public class AccountController : ControllerBase {
 				userRole = userRole.USER,
 				code = _auth.GetRandom6charCode()
 			};
-			_db.Add(user);
-
-			var audit = new ForumUserAudit {
-				date = DateTime.Now,
-				user = user,
-				action = userAction.REGISTER,
-			};
-			_db.Add(audit);
-
-			_db.SaveChanges();
+			
+			_userRepo.RegisterUser(user);
 
 			_email.sendRegistrationConfirmation(user.email, user.code);
 
@@ -251,25 +229,18 @@ public class AccountController : ControllerBase {
 		}
 
 		try {
-			var user = _db.Users.Where(u => u.code == data.token).First();
+			var user = _userRepo.GetUserByCode(data.token);
+
+			if (user == null) {
+				return NotFound();
+			}
 
 			if (user.userState != userState.AWAIT_REG) {
 				// We shouldn't be here
 				return BadRequest();
 			}
 
-			var audit = new ForumUserAudit {
-				date = DateTime.Now,
-				user = user,
-				action = userAction.REGISTER_CONFIRM,
-			};
-			_db.Add(audit);
-
-			user.userState = userState.ACTIVE;
-			user.code = null;
-
-			_db.SaveChanges();
-
+			_userRepo.SetUserRegConfirmed(user);
 			return Ok();	
 		}
 		catch (Exception e) {
