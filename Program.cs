@@ -20,6 +20,8 @@ builder.Services.AddDbContext<ForumContext>(options => {
 
 
 builder.Services.AddTransient<UserRepository>();
+builder.Services.AddTransient<PostRepository>();
+builder.Services.AddTransient<ThreadRepository>();
 
 builder.Services.AddTransient<ForumAuthenticator>();
 builder.Services.AddTransient<ForumEmail>();

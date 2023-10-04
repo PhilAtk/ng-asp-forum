@@ -7,12 +7,18 @@ namespace asptest.Controllers;
 [Route("api/[controller]")]
 public class PostController : ControllerBase {
 	private readonly ILogger<PostController> _logger;
-	private ForumContext _db;
+	private PostRepository _postRepo;
+	private UserRepository _userRepo;
+	private ThreadRepository _threadRepo;
 	private ForumAuthenticator _auth;
 
-	public PostController(ILogger<PostController> logger, ForumContext db, ForumAuthenticator auth) {
+	public PostController(ILogger<PostController> logger, PostRepository postRepo, UserRepository userRepo, ThreadRepository threadRepo, ForumAuthenticator auth) {
 		_logger = logger;
-		_db = db;
+
+		_postRepo = postRepo;
+		_userRepo = userRepo;
+		_threadRepo = threadRepo;
+
 		_auth = auth;
 	}
 
@@ -23,7 +29,7 @@ public class PostController : ControllerBase {
 
 	[HttpGet]
 	[Route("audit/{id}")]
-	public ActionResult<PostAuditResponse> GetUserAudit(int id) {
+	public ActionResult<PostAuditResponse> GetPostAudit(int id) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
@@ -35,23 +41,18 @@ public class PostController : ControllerBase {
 		}
 
 		try {
-			var viewer = _db.Users.Where(u => u.userID == viewerID).First();
+			var viewer = _userRepo.GetUserByID(viewerID);
 			if (viewer == null) {
 				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
 			if (viewer.userRole >= userRole.ADMIN) {
-				var post = _db.Posts
-					.Where(p => p.postID == id)
-					.First();
+				var post = _postRepo.GetPost(id);
 				if (post == null) {
 					return NotFound("No post found with the ID supplied for audit");
 				}
 
-				var audits = _db.PostAudits
-					.Where(a => a.post.postID == id)
-					.OrderByDescending(a => a.date)
-					.ToList();
+				var audits = _postRepo.GetPostAudits(id);
 
 				var res = new PostAuditResponse {
 					post = post,
@@ -84,26 +85,19 @@ public class PostController : ControllerBase {
 		}
 
 		try {
-			var post = _db.Posts
-				.Where(p => p.postID == id)
-				.Include(p => p.author)
-				.First();
+			var post = _postRepo.GetPost(id);
 			if (post == null) {
 				return NotFound("No post found with the given postID");
 			}
-			if (post.author == null) {
-				return NotFound("No valid author found for the given post");
-			}
 
-			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			var editor = _userRepo.GetUserByID(editorID);
 			if (editor == null) {
 				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
-			if ((	editor.userID == post.author.userID && editor.userState >= userState.ACTIVE) ||
+			if ((	editor.userID == post.author?.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
-					_db.Remove(post);
-					_db.SaveChanges();
+					_postRepo.DeletePost(post);
 					return Ok();
 			}
 		}
@@ -138,10 +132,7 @@ public class PostController : ControllerBase {
 		}
 
 		try {
-			var post = _db.Posts
-				.Where(p => p.postID == id)
-				.Include(p => p.author)
-				.First();
+			var post = _postRepo.GetPost(id);
 			if (post == null) {
 				return NotFound("No post found with the given postID");
 			}
@@ -149,25 +140,14 @@ public class PostController : ControllerBase {
 				return NotFound("No valid author found for the given post");
 			}
 
-			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			var editor = _userRepo.GetUserByID(editorID);
 			if (editor == null) {
 				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
 			if ((	editor.userID == post.author.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
-					var audit = new ForumPostAudit {
-						date = DateTime.Now,
-						post = post,
-						action = postAction.EDIT,
-						info = "Previous Text: '" + post.text +"'"
-					};
-					_db.Add(audit);
-
-					post.edited = true;
-					post.dateModified = DateTime.Now;
-					post.text = data.text;
-					_db.SaveChanges();
+					_postRepo.EditPost(post, data.text);
 					return Ok();
 			}
 		}
@@ -177,7 +157,7 @@ public class PostController : ControllerBase {
 			return StatusCode(500);
 		}
 
-		return Ok();
+		return BadRequest();
 	}
 
 	public class PostCreateData {
@@ -204,17 +184,18 @@ public class PostController : ControllerBase {
 		}
 
 		try {
-			var thread = _db.Threads.Where(t => t.threadID == data.threadID).First();
+			var thread = _threadRepo.GetThreadByID(data.threadID);
 			if (thread == null) {
 				return NotFound("Thread doesn't exist");
 			}
 
-			var author = _db.Users.Where(u => u.userID == authorID).First();
+			var author = _userRepo.GetUserByID(authorID);
 			if (author == null) {
 				return NotFound("No user found with the provided userID");
 			}
 
 			if (author.userState >= userState.ACTIVE) {
+				// TODO: Decouple a bit by having the repo look up the thread?
 				var post = new ForumPost{
 					date = DateTime.Now,
 					author = author,
@@ -222,16 +203,7 @@ public class PostController : ControllerBase {
 					thread = thread,
 					edited = false
 				};
-
-				var audit = new ForumPostAudit {
-					date = DateTime.Now,
-					post = post,
-					action = postAction.CREATE,
-				};
-				_db.Add(audit);
-
-				_db.Add(post);
-				_db.SaveChanges();
+				_postRepo.CreatePost(post);
 
 				return Ok();
 			}
