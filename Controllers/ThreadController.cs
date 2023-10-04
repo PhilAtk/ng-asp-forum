@@ -9,23 +9,23 @@ namespace asptest.Controllers;
 [Route("api/[controller]")]
 public class ThreadController : ControllerBase {
 	private readonly ILogger<ThreadController> _logger;
-	private ForumContext _db;
+	private ThreadRepository _threadRepo;
+	private UserRepository _userRepo;
 	private ForumAuthenticator _auth;
 
-	public ThreadController(ILogger<ThreadController> logger, ForumContext db, ForumAuthenticator auth) {
+	public ThreadController(ILogger<ThreadController> logger, ThreadRepository threadRepo, UserRepository userRepo, ForumAuthenticator auth) {
 		_logger = logger;
-		_db = db;
+
+		_threadRepo = threadRepo;
+		_userRepo = userRepo;
+
 		_auth = auth;
 	}
 
     	[HttpGet]
     	public ActionResult<IEnumerable<ForumThread>> GetThreadList() {
 		try {
-			// TODO: Make sure this lazy loads, don't want to load every post all at once
-			var list = _db.Threads
-				.Include(t => t.posts)
-				.Include(t => t.author)
-				.OrderByDescending(t => t.posts.OrderByDescending(p => p.date).First());
+			var list = _threadRepo.GetThreadList();
 
 			return Ok(list.ToArray());
 		}
@@ -42,7 +42,7 @@ public class ThreadController : ControllerBase {
 
 	[HttpGet]
 	[Route("audit/{id}")]
-	public ActionResult<ThreadAuditResponse> GetUserAudit(int id) {
+	public ActionResult<ThreadAuditResponse> GetThreadAudit(int id) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
@@ -54,23 +54,18 @@ public class ThreadController : ControllerBase {
 		}
 
 		try {
-			var viewer = _db.Users.Where(u => u.userID == viewerID).First();
+			var viewer = _userRepo.GetUserByID(viewerID);
 			if (viewer == null) {
 				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
 			if (viewer.userRole >= userRole.ADMIN) {
-				var thread = _db.Threads
-					.Where(t => t.threadID == id)
-					.First();
+				var thread = _threadRepo.GetThreadByID(id);
 				if (thread == null) {
 					return NotFound("No thread found with the ID supplied for audit");
 				}
 
-				var audits = _db.ThreadAudits
-					.Where(a => a.thread.threadID == id)
-					.OrderByDescending(a => a.date)
-					.ToList();
+				var audits = _threadRepo.GetThreadAudits(id);
 
 				var res = new ThreadAuditResponse {
 					thread = thread,
@@ -92,13 +87,7 @@ public class ThreadController : ControllerBase {
 	[Route("{id}")]
 	public ActionResult<ForumThread> GetThread(int id) {
 		try {
-			var thread = _db.Threads
-                		.Where(t => t.threadID == id)
-				.Include(t => t.author)
-				.Include(t => t.posts)
-				.ThenInclude(p => p.author)
-				.First();
-
+			var thread = _threadRepo.GetThreadByID(id);
 			if (thread == null) {
 				_logger.LogTrace("No thread found for ID: %d", id);
 				return NotFound();
@@ -111,7 +100,6 @@ public class ThreadController : ControllerBase {
 			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}
-
 	}
 
 	[HttpDelete]
@@ -129,12 +117,13 @@ public class ThreadController : ControllerBase {
 			return Unauthorized("Bearer token is not valid");
 		}
 
+		var editor = _userRepo.GetUserByID(editorID);
+		if (editor == null) {
+			return NotFound("No user found with the ID supplied by bearer token");
+		}
+
 		try {
-			var thread = _db.Threads
-				.Where(t => t.threadID == id)
-				.Include(t => t.author)
-				.Include(t => t.posts)
-				.First();
+			var thread = _threadRepo.GetThreadByID(id);
 			if (thread == null) {
 				return NotFound("No thread found with the given threadID");
 			}
@@ -142,15 +131,9 @@ public class ThreadController : ControllerBase {
 				return NotFound("No valid author for the given thread");
 			}
 
-			var editor = _db.Users.Where(u => u.userID == editorID).First();
-			if (editor == null) {
-				return NotFound("No user found with the ID supplied by bearer token");
-			}
-
 			if ((	editor.userID == thread.author.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
-					_db.Remove(thread);
-					_db.SaveChanges();
+					_threadRepo.DeleteThread(thread);
 					return Ok();
 			}
 		}
@@ -184,10 +167,7 @@ public class ThreadController : ControllerBase {
 		}
 
 		try {
-			var thread = _db.Threads
-				.Where(t => t.threadID == id)
-				.Include(t => t.author)
-				.First();
+			var thread = _threadRepo.GetThreadByID(id);
 			if (thread == null) {
 				return NotFound("No post found with the given postID");
 			}
@@ -195,27 +175,14 @@ public class ThreadController : ControllerBase {
 				return NotFound("No valid author for the given thread");
 			}
 
-			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			var editor = _userRepo.GetUserByID(editorID);
 			if (editor == null) {
 				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
 			if ((	editor.userID == thread.author.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
-
-					var audit = new ForumThreadAudit {
-						date = DateTime.Now,
-						thread = thread,
-						action = threadAction.EDIT,
-						info = "Previous Topic: '" + thread.topic +"'"
-					};
-					_db.Add(audit);
-
-					thread.edited = true;
-					thread.dateModified = DateTime.Now;
-					thread.topic = data.topic;
-
-					_db.SaveChanges();
+					_threadRepo.EditThread(thread, data.topic);
 					return Ok();
 			}
 		}
@@ -255,7 +222,7 @@ public class ThreadController : ControllerBase {
 		}
 
 		try {
-			var author = _db.Users.Where(u => u.userID == authorID).First();
+			var author = _userRepo.GetUserByID(authorID);
 			if (author == null) {
 				return NotFound("No user found with the provided userID");
 			}
@@ -275,15 +242,8 @@ public class ThreadController : ControllerBase {
 					thread = thread
 				});
 
-				var audit = new ForumThreadAudit {
-					date = DateTime.Now,
-					thread = thread,
-					action = threadAction.CREATE,
-				};
-				_db.Add(audit);
-
-				_db.Add(thread);
-				_db.SaveChanges();
+				// TODO: Move creation of thread/post objects to repo?
+				_threadRepo.PostThread(thread);
 				
 				var baseURL = Request.Scheme + "://" + Request.Host + '/';
 				return Created(baseURL + "thread/" + thread.threadID, thread);
