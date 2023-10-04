@@ -9,12 +9,12 @@ namespace asptest.Controllers;
 [Route("api/[controller]")]
 public class UserController : ControllerBase {
 	private readonly ILogger<UserController> _logger;
-	private ForumContext _db;
+	private UserRepository _userRepo;
 	private ForumAuthenticator _auth;
 
-	public UserController(ILogger<UserController> logger, ForumContext db, ForumAuthenticator auth) {
+	public UserController(ILogger<UserController> logger, UserRepository userRepo, ForumAuthenticator auth) {
 		_logger = logger;
-		_db = db;
+		_userRepo = userRepo;
 		_auth = auth;
 	}
 
@@ -37,23 +37,18 @@ public class UserController : ControllerBase {
 		}
 
 		try {
-			var viewer = _db.Users.Where(u => u.userID == viewerID).First();
+			var viewer = _userRepo.GetUserByID(viewerID);
 			if (viewer == null) {
 				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
 			if (viewer.userRole >= userRole.ADMIN) {
-				var user = _db.Users
-					.Where(u => u.userID == id)
-					.First();
+				var user = _userRepo.GetUserByID(id);
 				if (user == null) {
 					return NotFound("No user found with the ID supplied for audit");
 				}
 
-				var audits = _db.UserAudits
-					.Where(a => a.user.userID == id)
-					.OrderByDescending(a => a.date)
-					.ToList();
+				var audits = _userRepo.GetUserAudits(id);
 
 				var res = new UserAuditResponse {
 					user = user,
@@ -84,16 +79,14 @@ public class UserController : ControllerBase {
 		}
 
 		try {
-			var viewer = _db.Users.Where(u => u.userID == viewerID).First();
+			var viewer = _userRepo.GetUserByID(viewerID);
 			if (viewer == null) {
 				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
 			if (viewer.userRole >= userRole.ADMIN) {
 				// TODO: Make sure we don't spill any info we shouldn't
-				var list = _db.Users;
-
-				return Ok(list.ToArray());
+				return _userRepo.GetUsers();
 			}
 
 			return Unauthorized();
@@ -107,10 +100,7 @@ public class UserController : ControllerBase {
 	[HttpGet]
 	[Route("{id}")]
 	public ActionResult<ForumUser> GetUser(int id) {
-		var user = _db.Users
-			.Where(u => u.userID == id)
-			.First();
-
+		var user = _userRepo.GetUserByID(id);
 		if (user == null) {
 			return NotFound("No user was found with the specified ID");
 		}
@@ -136,20 +126,19 @@ public class UserController : ControllerBase {
 		}
 
 		try {
-			var user_to_edit = _db.Users.Where(u => u.userID == id).First();
+			var user_to_edit = _userRepo.GetUserByID(id);
 			if (user_to_edit == null) {
 				return NotFound("No user found with the given userID");
 			}
 
-			var editor = _db.Users.Where(u => u.userID == editorID).First();
+			var editor = _userRepo.GetUserByID(editorID);
 			if (editor == null) {
 				return NotFound("No user found with the ID supplied by bearer token");
 			}
 
 			if ((	editor.userID == user_to_edit.userID && editor.userState >= userState.ACTIVE) ||
 				editor.userRole >= userRole.ADMIN) {
-					user_to_edit.bio = data.bio;
-					_db.SaveChanges();
+					_userRepo.SetUserBio(user_to_edit, data.bio);
 					return Ok();
 			}
 
@@ -185,29 +174,18 @@ public class UserController : ControllerBase {
 		}
 
 		try {
-			var user = _db.Users.Where(u => u.userID == id).First();
+			var user = _userRepo.GetUserByID(id);
 			if (user == null) {
 				return NotFound("No user found with the given userID");
 			}
 
-			var editor = _db.Users.Where(u => u.userID == editorUserID).First();
+			var editor = _userRepo.GetUserByID(editorUserID);
 			if (editor == null) {
 				return NotFound("No user found with the given auth credentials");
 			}
 
 			if (editor.userRole >= userRole.ADMIN) {
-
-				var audit = new ForumUserAudit {
-					date = DateTime.Now,
-					user = user,
-					action = userAction.BAN,
-					info = "Reason: " + data.reason
-				};
-				_db.Add(audit);
-				
-				user.userState = userState.BANNED;
-				_db.SaveChanges();
-
+				_userRepo.BanUser(user, data.reason);
 				return Ok();
 			}
 
@@ -234,28 +212,18 @@ public class UserController : ControllerBase {
 		}
 
 		try {
-			var user = _db.Users.Where(u => u.userID == id).First();
+			var user = _userRepo.GetUserByID(id);
 			if (user == null) {
 				return NotFound("No user found with the given userID");
 			}
 
-			var editor = _db.Users.Where(u => u.userID == editorUserID).First();
+			var editor = _userRepo.GetUserByID(editorUserID);
 			if (editor == null) {
 				return NotFound("No user found with the given auth credentials");
 			}
 
 			if (editor.userRole >= userRole.ADMIN) {
-				
-				var audit = new ForumUserAudit {
-					date = DateTime.Now,
-					user = user,
-					action = userAction.UNBAN,
-				};
-				_db.Add(audit);
-
-				user.userState = userState.ACTIVE;
-				_db.SaveChanges();
-
+				_userRepo.UnbanUser(user);
 				return Ok();
 			}
 

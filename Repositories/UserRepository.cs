@@ -8,13 +8,21 @@ public class UserRepository {
 		_db = db;
 	}
 
+	public List<ForumUser> GetUsers() {
+		return _db.Users.ToList();
+	}
+
 	public ForumUser GetUserByID(int id) {
-		return _db.Users.Where(u => u.userID == id).First();
+		return _db.Users
+			.Where(u => u.userID == id)
+			.First();
 	}
 
 	public ForumUser? GetUserByUsername(string username) {
 		try {
-			return _db.Users.Where(u => u.userName == username).First();
+			return _db.Users
+				.Where(u => u.userName == username)
+				.First();
 		}
 
 		catch {
@@ -25,7 +33,9 @@ public class UserRepository {
 
 	public ForumUser GetUserByEmail(string email) {
 		try {
-			return _db.Users.Where(u => u.email == email).First();
+			return _db.Users
+				.Where(u => u.email == email)
+				.First();
 		}
 
 		catch {
@@ -35,7 +45,16 @@ public class UserRepository {
 	}
 
 	public ForumUser GetUserByCode(string code) {
-		return _db.Users.Where(u => u.code == code).First();
+		return _db.Users
+			.Where(u => u.code == code)
+			.First();
+	}
+
+	public List<ForumUserAudit> GetUserAudits(int id) {
+		return _db.UserAudits
+			.Where(a => a.user.userID == id)
+			.OrderByDescending(a => a.date)
+			.ToList();
 	}
 
 	public void RegisterUser(ForumUser user) {
@@ -49,6 +68,37 @@ public class UserRepository {
 		};
 		_db.UserAudits.Add(audit);
 
+		_db.SaveChanges();
+	}
+
+	public void BanUser(ForumUser user, string? reason) {
+
+		var audit = new ForumUserAudit {
+			date = DateTime.Now,
+			user = user,
+			action = userAction.BAN,
+			info = "Reason: " + (string.IsNullOrWhiteSpace(reason) ? "NONE" : reason)
+		};
+		_db.Add(audit);
+				
+		user.userState = userState.BANNED;
+		_db.SaveChanges();
+	}
+
+	public void UnbanUser(ForumUser user) {
+		var audit = new ForumUserAudit {
+			date = DateTime.Now,
+			user = user,
+			action = userAction.UNBAN,
+		};
+		_db.Add(audit);
+
+		user.userState = userState.ACTIVE;
+		_db.SaveChanges();
+	}
+
+	public void SetUserBio(ForumUser user, string? newBio) {
+		user.bio = newBio;
 		_db.SaveChanges();
 	}
 
