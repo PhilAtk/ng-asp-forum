@@ -121,7 +121,17 @@ public class ForumAuthenticator {
 	}
 
 	public bool TokenIsUser(string token, int userID) {
-		throw new NotImplementedException();
+		
+		int tokenID;
+		VerifyBearerToken(token, out tokenID);
+		
+		if (tokenID == userID) {
+			return true;
+		}
+
+		else {
+			return false;
+		}
 	}
 
 	public bool TokenIsPostAuthor(string token, int postID) {
