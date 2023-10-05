@@ -6,29 +6,19 @@ namespace asptest.Controllers;
 [Route("api/[controller]")]
 public class AccountController : ControllerBase {
 	private readonly ILogger<AccountController> _logger;
-	private UserRepository _userRepo;
-	private ForumAuthenticator _auth;
-	private ForumEmail _email;
 
-	public AccountController(ILogger<AccountController> logger, UserRepository userRepo, ForumAuthenticator auth, ForumEmail email) {
+	private AccountService _account;
+
+	public AccountController(ILogger<AccountController> logger, AccountService account) {
 		_logger = logger;
-		_userRepo = userRepo;
-		_auth = auth;
-		_email = email;
+
+		_account = account;
 	}
 
 	public class LoginData {
 		public string? username {get; set;}
 		public string? password {get; set;}
 	};
-
-	public class LoginResult {
-		public string? userName {get; set;}
-		public int userID {get; set;}
-		public int userRole {get; set;}
-		public int userState {get; set;}
-		public string? token {get; set;}
-	}
 
 	[HttpPost]
 	[Route("login")]
@@ -38,48 +28,14 @@ public class AccountController : ControllerBase {
 		}
 
 		try {
-			var user = _userRepo.GetUserByUsername(data.username);
-
-			if (user == null) {
-				return BadRequest();
-			}
-
-			if (string.IsNullOrWhiteSpace(user.password)) {
-				// TODO: If this happens, we might want to require a password reset
-				return StatusCode(500);
-			}
-
-			switch (user.userState) {
-				case userState.ACTIVE:
-					if (_auth.HashVerify(data.password, user.password)) {
-						var token = _auth.GenerateBearerToken(user.userID);
-
-						var res = new LoginResult{
-							token = token,
-							userName = user.userName,
-							userID = user.userID,
-							userRole = (int)user.userRole,
-							userState = (int)user.userState,
-						};
-
-						return Ok(res);
-					}
-					return Unauthorized("Incorrect Password");
-
-				case userState.AWAIT_REG:
-					return Unauthorized("Please confirm registration before logging in");
-				case userState.BANNED:
-					return Unauthorized("This account has been banned");
-				case userState.DISABLED:
-					return Unauthorized("This account has been disabled");
-				default:
-					return Unauthorized("Failed to log in");
-			}
+			var res = _account.Login(data.username, data.password);
+			return Ok(res);
 		}
 
 		catch (Exception e) {
+			// TODO: Separate out server errors with exception types
 			_logger.LogError(e.Message);
-			return StatusCode(500);
+			return BadRequest();
 		}
 	}
 
@@ -94,35 +50,18 @@ public class AccountController : ControllerBase {
 			return BadRequest("No email provided for password reset");
 		}
 
-		var user = _userRepo.GetUserByEmail(data.email);
-		if (user == null) {
-			return NotFound();
+		try {
+			_account.ResetPasswordByEmail(data.email);
 		}
-
-		// Must have already registered, or not been banned
-		if (user.userState != userState.ACTIVE) {
-			return Unauthorized("Please finish registration before requesting a password reset");
-		}
-
-		if (string.IsNullOrWhiteSpace(user.email)) {
-			// TODO: This would be very bad, ask them to contact an admin
+		catch {
+			// TODO: Add custom exception types to check if bad request
+			// Probably shouldn't announce if the email wasn't found for security reasons
 			return StatusCode(500);
 		}
 
-		// Generate a reset code
-		var resetCode = _auth.GetRandom6charCode();
-
-		try {
-			_userRepo.SetUserCode(user, resetCode);
-
-			_email.sendPasswordReset(user.email, resetCode);
-		}
-		catch (Exception e) {
-			_logger.LogError(e.Message);
-			return StatusCode(500); // It might have been our fault idk
-		}
-
+		// TODO: Wrap the message in an object to pull out of on the frontend?
 		return Ok();
+		
 	}
 
 	public class ResetData {
@@ -142,16 +81,8 @@ public class AccountController : ControllerBase {
 			return BadRequest("No password provided");
 		}
 
-		// Find the user for this code
-		var user = _userRepo.GetUserByCode(data.token);
-
-		if (user == null) {
-			return NotFound();
-		}
-
-		try {		
-			var hashedPass = _auth.Hash(data.password);
-			_userRepo.SetUserHashedPass(user, hashedPass);
+		try {
+			_account.VerifyAndResetPassword(data.token, data.password);
 		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);
@@ -184,35 +115,14 @@ public class AccountController : ControllerBase {
 		}
 
 		try {
-			var user = _userRepo.GetUserByUsername(data.username);
-			if (user != null) {
-				return BadRequest("Username already exists");
-			}
-
-			user = _userRepo.GetUserByEmail(data.email);
-			if (user != null) {
-				return BadRequest("Email already in use");
-			}
-
-			user = new ForumUser{
-				userName = data.username,
-				password = _auth.Hash(data.password),
-				email = data.email,
-				userState = userState.AWAIT_REG,
-				userRole = userRole.USER,
-				code = _auth.GetRandom6charCode()
-			};
-			
-			_userRepo.RegisterUser(user);
-
-			_email.sendRegistrationConfirmation(user.email, user.code);
-
+			_account.RegisterUser(data.username, data.email, data.password);
 			return Ok();
 		}
 
 		catch (Exception e) {
+			// TODO: Separate out exceptions
 			_logger.LogError(e.Message);
-			return StatusCode(500);
+			return BadRequest();
 		}
 	}
 
@@ -229,21 +139,11 @@ public class AccountController : ControllerBase {
 		}
 
 		try {
-			var user = _userRepo.GetUserByCode(data.token);
-
-			if (user == null) {
-				return NotFound();
-			}
-
-			if (user.userState != userState.AWAIT_REG) {
-				// We shouldn't be here
-				return BadRequest();
-			}
-
-			_userRepo.SetUserRegConfirmed(user);
+			_account.ConfirmRegistration(data.token);
 			return Ok();	
 		}
 		catch (Exception e) {
+			// TODO: Separate out exceptions
 			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}

@@ -18,10 +18,11 @@ builder.Services.AddDbContext<ForumContext>(options => {
         .LogTo(Console.WriteLine, LogLevel.Information);
 });
 
-
 builder.Services.AddTransient<UserRepository>();
 builder.Services.AddTransient<PostRepository>();
 builder.Services.AddTransient<ThreadRepository>();
+
+builder.Services.AddTransient<AccountService>();
 
 builder.Services.AddTransient<ForumAuthenticator>();
 builder.Services.AddTransient<ForumEmail>();
