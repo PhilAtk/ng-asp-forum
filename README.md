@@ -25,4 +25,15 @@ Before attempting to run, the following environment variables must be set:
 ```
 
 ## Building and Hosting
-At the time of writing, there is no intended method for building and hosting, as the implementation is still in development
+The simplest way to run the forum is to use the provided docker-compose.yml file. To use:
+
+1. Clone this repository with git clone
+2. Set the above environment variables in a .env file to load in
+3. Run `docker compose --env-file [your-env-file.env] up`
+
+If all the required environment variables are set, the MySQL server and Forum instance should be running.
+
+By default, there are no forum users. Register a user by following the prompts on the application page.
+
+It is expected that a SysOp should be able to connect to the MySQL server to set their role to SysOp through database operations.
+At time of writing, there is no in-forum solution to set users as Admin.
