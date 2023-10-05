@@ -73,6 +73,7 @@ public class UserRepository {
 
 	public void BanUser(ForumUser user, string? reason) {
 
+		// TODO: Get user by ID, don't let them supply it
 		var audit = new ForumUserAudit {
 			date = DateTime.Now,
 			user = user,

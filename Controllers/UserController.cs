@@ -9,18 +9,13 @@ namespace asptest.Controllers;
 [Route("api/[controller]")]
 public class UserController : ControllerBase {
 	private readonly ILogger<UserController> _logger;
-	private UserRepository _userRepo;
-	private ForumAuthenticator _auth;
 
-	public UserController(ILogger<UserController> logger, UserRepository userRepo, ForumAuthenticator auth) {
+	private UserService _user;
+
+	public UserController(ILogger<UserController> logger, UserService user) {
 		_logger = logger;
-		_userRepo = userRepo;
-		_auth = auth;
-	}
 
-	public class UserAuditResponse {
-		public ForumUser user {get; set;}
-		public List<ForumUserAudit> audits {get; set;}
+		_user = user;
 	}
 
 	[HttpGet]
@@ -31,36 +26,13 @@ public class UserController : ControllerBase {
 			return BadRequest("No auth token provided");
 		}
 
-		int viewerID;
-		if (!_auth.VerifyBearerToken(auth, out viewerID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
 		try {
-			var viewer = _userRepo.GetUserByID(viewerID);
-			if (viewer == null) {
-				return NotFound("No user found with the ID supplied by bearer token");
-			}
-
-			if (viewer.userRole >= userRole.ADMIN) {
-				var user = _userRepo.GetUserByID(id);
-				if (user == null) {
-					return NotFound("No user found with the ID supplied for audit");
-				}
-
-				var audits = _userRepo.GetUserAudits(id);
-
-				var res = new UserAuditResponse {
-					user = user,
-					audits = audits
-				};
-
-				return Ok(res);
-			}
-
-			return Unauthorized();
+			var res = _user.GetUserAudit(id, auth);
+			return Ok(res);
 		}
+
 		catch (Exception e) {
+			// TODO: Separate exceptions
 			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}	
@@ -73,25 +45,12 @@ public class UserController : ControllerBase {
 			return BadRequest("No auth token provided");
 		}
 
-		int viewerID;
-		if (!_auth.VerifyBearerToken(auth, out viewerID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
 		try {
-			var viewer = _userRepo.GetUserByID(viewerID);
-			if (viewer == null) {
-				return NotFound("No user found with the ID supplied by bearer token");
-			}
-
-			if (viewer.userRole >= userRole.ADMIN) {
-				// TODO: Make sure we don't spill any info we shouldn't
-				return _userRepo.GetUsers();
-			}
-
-			return Unauthorized();
+			var userList = _user.GetUserList(auth);
+			return Ok(userList);
 		}
 		catch (Exception e) {
+			// TODO: Separate Exceptions
 			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}
@@ -100,12 +59,19 @@ public class UserController : ControllerBase {
 	[HttpGet]
 	[Route("{id}")]
 	public ActionResult<ForumUser> GetUser(int id) {
-		var user = _userRepo.GetUserByID(id);
-		if (user == null) {
-			return NotFound("No user was found with the specified ID");
+		
+		// TODO: Change to a front-end safe viewmodel
+		ForumUser res;
+
+		try {
+			res = _user.GetUser(id);
+		}
+		catch {
+			// TODO: Separate out exceptions
+			return NotFound();
 		}
 
-		return user;
+		return res;
 	}
 
 	public class UserEditData {
@@ -114,37 +80,18 @@ public class UserController : ControllerBase {
 
 	[HttpPatch]
 	[Route("{id}")]
-	public ActionResult UpdateUser(int id, UserEditData data) {
+	public ActionResult UpdateUserBio(int id, UserEditData data) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
 		}
 
-		int editorID;
-		if (!_auth.VerifyBearerToken(auth, out editorID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
 		try {
-			var user_to_edit = _userRepo.GetUserByID(id);
-			if (user_to_edit == null) {
-				return NotFound("No user found with the given userID");
-			}
-
-			var editor = _userRepo.GetUserByID(editorID);
-			if (editor == null) {
-				return NotFound("No user found with the ID supplied by bearer token");
-			}
-
-			if ((	editor.userID == user_to_edit.userID && editor.userState >= userState.ACTIVE) ||
-				editor.userRole >= userRole.ADMIN) {
-					_userRepo.SetUserBio(user_to_edit, data.bio);
-					return Ok();
-			}
-
-			return Unauthorized();
+			_user.UpdateUserBio(id, data.bio, auth);
+			return Ok();
 		}
 		catch (Exception e) {
+			// TODO: Separate exceptions
 			_logger.LogError("Error editing user: " + e.Message);
 			return StatusCode(500);
 		}
@@ -163,35 +110,16 @@ public class UserController : ControllerBase {
 	[Route("ban/{id}")]
 	public ActionResult Ban(int id, BanData data) {
 		var auth = Request.Cookies["auth"];
-
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
 		}
 
-		int editorUserID;
-		if (!_auth.VerifyBearerToken(auth, out editorUserID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
 		try {
-			var user = _userRepo.GetUserByID(id);
-			if (user == null) {
-				return NotFound("No user found with the given userID");
-			}
-
-			var editor = _userRepo.GetUserByID(editorUserID);
-			if (editor == null) {
-				return NotFound("No user found with the given auth credentials");
-			}
-
-			if (editor.userRole >= userRole.ADMIN) {
-				_userRepo.BanUser(user, data.reason);
-				return Ok();
-			}
-
-			return Unauthorized();
+			_user.BanUser(id, data.reason, auth);
+			return Ok();
 		}
 		catch (Exception e) {
+			// TODO: Separate exceptions
 			_logger.LogError("Error banning user: " + e.Message);
 			return StatusCode(500);
 		}
@@ -201,35 +129,16 @@ public class UserController : ControllerBase {
 	[Route("unban/{id}")]
 	public ActionResult Unban(int id) {
 		var auth = Request.Cookies["auth"];
-
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
 		}
 
-		int editorUserID;
-		if (!_auth.VerifyBearerToken(auth, out editorUserID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
 		try {
-			var user = _userRepo.GetUserByID(id);
-			if (user == null) {
-				return NotFound("No user found with the given userID");
-			}
-
-			var editor = _userRepo.GetUserByID(editorUserID);
-			if (editor == null) {
-				return NotFound("No user found with the given auth credentials");
-			}
-
-			if (editor.userRole >= userRole.ADMIN) {
-				_userRepo.UnbanUser(user);
-				return Ok();
-			}
-
-			return Unauthorized();
+			_user.UnbanUser(id, auth);
+			return Ok();
 		}
 		catch (Exception e) {
+			// TODO: Separate exceptions
 			_logger.LogError("Error unbanning user: " + e.Message);
 			return StatusCode(500);
 		}

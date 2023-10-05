@@ -20,7 +20,9 @@ public class ForumAuthenticator {
 	private readonly string _issuer;
 	private readonly string _audience;
 
-	public ForumAuthenticator(IConfiguration config) {
+	private UserRepository _userRepo;
+
+	public ForumAuthenticator(IConfiguration config, UserRepository userRepo) {
 		var audience = config["AUTH_AUDIENCE"];
 		var issuer = config["AUTH_ISSUER"];
 		var secret = config["AUTH_SECRET"];
@@ -39,6 +41,8 @@ public class ForumAuthenticator {
 			throw new Exception("No secret provided for authentication. Please set 'AUTH_SECRET'");
 		}
 		securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
+
+		_userRepo = userRepo;
 	}
 
 	public string GetRandom6charCode()
@@ -96,6 +100,42 @@ public class ForumAuthenticator {
 		}
 
 		return true;
+	}
+
+	public bool TokenIsAdmin(string token) {
+		int authTokenUserID;
+		if (!VerifyBearerToken(token, out authTokenUserID)) {
+			throw new Exception("Bearer token is not valid");
+		}
+
+		var user = _userRepo.GetUserByID(authTokenUserID);
+		if (user == null) {
+			throw new Exception("No user found with the given auth credentials");
+		}
+
+		if (user.userRole >= userRole.ADMIN) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public bool TokenIsUser(string token, int userID) {
+		throw new NotImplementedException();
+	}
+
+	public bool TokenIsPostAuthor(string token, int postID) {
+		// Get Post
+		// Get author ID
+		// Send to TokenIsUser
+		throw new NotImplementedException();
+	}
+
+	public bool TokenIsThreadAuthor(string token, int threadID) {
+		// Get Thread
+		// Get author ID
+		// Send to TokenIsUser
+		throw new NotImplementedException();
 	}
 
 	public string Hash(string input) {
