@@ -100,7 +100,7 @@ public class ThreadController : ControllerBase {
 		}
 
 		try {
-			_thread.UpdateThread(id, data.topic, auth);
+			_thread.EditThread(id, data.topic, auth);
 			return Ok();
 		}
 		catch (Exception e) {

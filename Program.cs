@@ -25,6 +25,7 @@ builder.Services.AddTransient<ThreadRepository>();
 builder.Services.AddTransient<AccountService>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ThreadService>();
+builder.Services.AddTransient<PostService>();
 
 builder.Services.AddTransient<ForumAuthenticator>();
 builder.Services.AddTransient<ForumEmail>();

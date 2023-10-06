@@ -7,24 +7,12 @@ namespace asptest.Controllers;
 [Route("api/[controller]")]
 public class PostController : ControllerBase {
 	private readonly ILogger<PostController> _logger;
-	private PostRepository _postRepo;
-	private UserRepository _userRepo;
-	private ThreadRepository _threadRepo;
-	private ForumAuthenticator _auth;
+	private PostService _post;
 
-	public PostController(ILogger<PostController> logger, PostRepository postRepo, UserRepository userRepo, ThreadRepository threadRepo, ForumAuthenticator auth) {
+	public PostController(ILogger<PostController> logger, PostService post) {
 		_logger = logger;
 
-		_postRepo = postRepo;
-		_userRepo = userRepo;
-		_threadRepo = threadRepo;
-
-		_auth = auth;
-	}
-
-	public class PostAuditResponse {
-		public ForumPost post {get; set;}
-		public List<ForumPostAudit> audits {get;set;}
+		_post = post;
 	}
 
 	[HttpGet]
@@ -35,36 +23,12 @@ public class PostController : ControllerBase {
 			return BadRequest("No auth token provided");
 		}
 
-		int viewerID;
-		if (!_auth.VerifyBearerToken(auth, out viewerID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
 		try {
-			var viewer = _userRepo.GetUserByID(viewerID);
-			if (viewer == null) {
-				return NotFound("No user found with the ID supplied by bearer token");
-			}
-
-			if (viewer.userRole >= userRole.ADMIN) {
-				var post = _postRepo.GetPost(id);
-				if (post == null) {
-					return NotFound("No post found with the ID supplied for audit");
-				}
-
-				var audits = _postRepo.GetPostAudits(id);
-
-				var res = new PostAuditResponse {
-					post = post,
-					audits = audits
-				};
-
-				return Ok(res);
-			}
-
-			return Unauthorized();
+			var res = _post.GetPostAuditResponse(id, auth);
+			return Ok(res);
 		}
 		catch (Exception e) {
+			// TODO: Separate exceptions
 			_logger.LogError(e.Message);
 			return StatusCode(500);
 		}	
@@ -79,34 +43,15 @@ public class PostController : ControllerBase {
 			return BadRequest("No auth token provided");
 		}
 
-		int editorID;
-		if (!_auth.VerifyBearerToken(auth, out editorID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
 		try {
-			var post = _postRepo.GetPost(id);
-			if (post == null) {
-				return NotFound("No post found with the given postID");
-			}
-
-			var editor = _userRepo.GetUserByID(editorID);
-			if (editor == null) {
-				return NotFound("No user found with the ID supplied by bearer token");
-			}
-
-			if ((	editor.userID == post.author?.userID && editor.userState >= userState.ACTIVE) ||
-				editor.userRole >= userRole.ADMIN) {
-					_postRepo.DeletePost(post);
-					return Ok();
-			}
+			_post.DeletePost(id, auth);
+			return Ok();
 		}
 		catch (Exception e) {
+			// TODO: Separate exceptions
 			_logger.LogError("Error deleting post: " + e.Message);
 			return StatusCode(500);
 		}
-
-		return Ok();
 	}
 
 	public class PostEditData {
@@ -126,38 +71,16 @@ public class PostController : ControllerBase {
 			return BadRequest("No auth token provided");
 		}
 
-		int editorID;
-		if (!_auth.VerifyBearerToken(auth, out editorID)) {
-			return Unauthorized("Bearer token is not valid");
-		}
-
 		try {
-			var post = _postRepo.GetPost(id);
-			if (post == null) {
-				return NotFound("No post found with the given postID");
-			}
-			if (post.author == null) {
-				return NotFound("No valid author found for the given post");
-			}
-
-			var editor = _userRepo.GetUserByID(editorID);
-			if (editor == null) {
-				return NotFound("No user found with the ID supplied by bearer token");
-			}
-
-			if ((	editor.userID == post.author.userID && editor.userState >= userState.ACTIVE) ||
-				editor.userRole >= userRole.ADMIN) {
-					_postRepo.EditPost(post, data.text);
-					return Ok();
-			}
+			_post.EditPost(id, data.text, auth);
+			return Ok();
 		}
 		
 		catch (Exception e) {
+			// TODO: Separate exceptions
 			_logger.LogError("Error updating post: " + e.Message);
 			return StatusCode(500);
 		}
-
-		return BadRequest();
 	}
 
 	public class PostCreateData {
@@ -173,42 +96,15 @@ public class PostController : ControllerBase {
 		}
 
 		var auth = Request.Cookies["auth"];
-
 		if (auth == null) {
 			return BadRequest("No auth token provided");
 		}
 
-		int authorID;
-		if (!_auth.VerifyBearerToken(auth, out authorID)) {
-			return Unauthorized();
-		}
-
 		try {
-			var thread = _threadRepo.GetThreadByID(data.threadID);
-			if (thread == null) {
-				return NotFound("Thread doesn't exist");
-			}
+			var post = _post.CreatePost(data.threadID, data.text, auth);
 
-			var author = _userRepo.GetUserByID(authorID);
-			if (author == null) {
-				return NotFound("No user found with the provided userID");
-			}
-
-			if (author.userState >= userState.ACTIVE) {
-				// TODO: Decouple a bit by having the repo look up the thread?
-				var post = new ForumPost{
-					date = DateTime.Now,
-					author = author,
-					text = data.text,
-					thread = thread,
-					edited = false
-				};
-				_postRepo.CreatePost(post);
-
-				return Ok();
-			}
-
-			return Unauthorized();
+			var baseURL = Request.Scheme + "://" + Request.Host + '/';
+			return Created(baseURL + "thread/" + post.thread?.threadID + "#" + post.postID, post);
 		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);

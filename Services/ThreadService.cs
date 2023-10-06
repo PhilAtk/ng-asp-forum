@@ -65,7 +65,7 @@ public class ThreadService {
 	}
 
 	public void DeleteThread(int threadID, string auth) {
-		var thread = GetThreadByID(threadID);
+		var thread = _threadRepo.GetThreadByID(threadID);
 
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, thread.author.userID)) {
 			// TODO: Make DeleteThread in the repo just take threadID?
@@ -77,7 +77,7 @@ public class ThreadService {
 		}
 	}
 
-	public void UpdateThread(int threadID, string topic, string auth) {
+	public void EditThread(int threadID, string topic, string auth) {
 		var thread = GetThreadByID(threadID);
 
 		// TODO: Do this in a cleaner way where the token isn't parsed twice
