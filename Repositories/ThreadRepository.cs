@@ -19,6 +19,7 @@ public class ThreadRepository {
 
 	public ForumThread GetThreadByID(int threadID) {
 		// TODO: Don't include posts and authors all the time? Make separate methods?
+		// TODO: Check if returning null? or just let an exception get thrown?
 		return _db.Threads
 			.Where(t => t.threadID == threadID)
 			.Include(t => t.author)

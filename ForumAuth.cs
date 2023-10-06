@@ -121,7 +121,7 @@ public class ForumAuthenticator {
 	}
 
 	public bool TokenIsUser(string token, int userID) {
-		
+
 		int tokenID;
 		VerifyBearerToken(token, out tokenID);
 		
@@ -132,20 +132,6 @@ public class ForumAuthenticator {
 		else {
 			return false;
 		}
-	}
-
-	public bool TokenIsPostAuthor(string token, int postID) {
-		// Get Post
-		// Get author ID
-		// Send to TokenIsUser
-		throw new NotImplementedException();
-	}
-
-	public bool TokenIsThreadAuthor(string token, int threadID) {
-		// Get Thread
-		// Get author ID
-		// Send to TokenIsUser
-		throw new NotImplementedException();
 	}
 
 	public string Hash(string input) {
@@ -169,5 +155,4 @@ public class ForumAuthenticator {
 
 		return CryptographicOperations.FixedTimeEquals(inputHash, hash);
 	}
-
 }
