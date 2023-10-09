@@ -22,7 +22,7 @@ public class AccountController : ControllerBase {
 
 	[HttpPost]
 	[Route("login")]
-	public IActionResult Login(LoginData data) {
+	public ActionResult<LoginResult> Login(LoginData data) {
 		if (string.IsNullOrWhiteSpace(data.password) || string.IsNullOrWhiteSpace(data.username)) {
 			return BadRequest();
 		}

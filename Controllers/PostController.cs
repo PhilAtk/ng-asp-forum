@@ -104,7 +104,7 @@ public class PostController : ControllerBase {
 			var post = _post.CreatePost(data.threadID, data.text, auth);
 
 			var baseURL = Request.Scheme + "://" + Request.Host + '/';
-			return Created(baseURL + "thread/" + post.thread?.threadID + "#" + post.postID, post);
+			return Created(baseURL + "thread/" + data.threadID + "#" + post.postID, post);
 		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);

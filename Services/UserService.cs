@@ -5,11 +5,12 @@ public class UserService {
 	private ForumAuthenticator _auth;
 
 	public UserService(ILogger<UserService> logger, UserRepository userRepo, ForumAuthenticator auth) {
+		_logger = logger;
 		_userRepo = userRepo;
 		_auth = auth;
 	}
 
-	public ForumUser GetUser(int userID) {
+	public UserViewmodel GetUser(int userID) {
 
 		// TODO: Pack this into a viewmodel safe to return to the frontend
 		var user = _userRepo.GetUserByID(userID);
@@ -19,13 +20,17 @@ public class UserService {
 			throw new Exception("No user was found with the specified ID");
 		}
 
-		return user;
+		return new UserViewmodel(user);
 	}
 
-	public List<ForumUser> GetUserList(string auth) {
+	public List<UserViewmodel> GetUserList(string auth) {
 		if (_auth.TokenIsAdmin(auth)) {
-			// TODO: Switch to use Viewmodel to make sure we don't spill any info we shouldn't
-			return _userRepo.GetUsers();
+			var usersBackend = _userRepo.GetUsers();
+			List<UserViewmodel> users = new List<UserViewmodel>();
+
+			usersBackend.ForEach(u => users.Add(new UserViewmodel(u)));
+
+			return users;
 		}
 
 		else {
@@ -35,9 +40,14 @@ public class UserService {
 
 	public UserAuditResponse GetUserAudit(int userID, string auth) {
 		if (_auth.TokenIsAdmin(auth)) {
+			var auditsBackend = _userRepo.GetUserAudits(userID);
+			List<UserAuditViewmodel> audits = new List<UserAuditViewmodel>();
+
+			auditsBackend.ForEach(a => audits.Add(new UserAuditViewmodel(a)));
+
 			return new UserAuditResponse{
-				user = _userRepo.GetUserByID(userID),
-				audits = _userRepo.GetUserAudits(userID)
+				user = new UserViewmodel(_userRepo.GetUserByID(userID)),
+				audits = audits
 			};
 		}
 

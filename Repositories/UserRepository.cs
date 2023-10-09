@@ -31,7 +31,7 @@ public class UserRepository {
 		}		
 	}
 
-	public ForumUser GetUserByEmail(string email) {
+	public ForumUser? GetUserByEmail(string email) {
 		try {
 			return _db.Users
 				.Where(u => u.email == email)

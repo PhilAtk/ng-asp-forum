@@ -18,9 +18,14 @@ public class PostService {
 
 	public PostAuditResponse GetPostAuditResponse(int postID, string auth) {
 		if (_auth.TokenIsAdmin(auth)) {
+			var auditsBackend = _postRepo.GetPostAudits(postID);
+
+			List<PostAuditViewmodel> audits = new List<PostAuditViewmodel>();
+			auditsBackend.ForEach(a => audits.Add(new PostAuditViewmodel(a)));
+
 			return new PostAuditResponse{
-				post = _postRepo.GetPost(postID),
-				audits = _postRepo.GetPostAudits(postID)
+				post = new PostViewmodel(_postRepo.GetPost(postID)),
+				audits = audits
 			};
 		}
 
@@ -29,7 +34,7 @@ public class PostService {
 		}
 	}
 
-	public ForumPost CreatePost(int threadID, string text, string auth) {
+	public PostViewmodel CreatePost(int threadID, string text, string auth) {
 		int authorID;
 		if (_auth.VerifyBearerToken(auth, out authorID)) {
 
@@ -47,7 +52,7 @@ public class PostService {
 					edited = false
 				};
 				_postRepo.CreatePost(post);
-				return post;
+				return new PostViewmodel(post);
 			}
 		}
 

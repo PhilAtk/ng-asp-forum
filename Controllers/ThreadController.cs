@@ -18,7 +18,7 @@ public class ThreadController : ControllerBase {
 	}
 
     	[HttpGet]
-    	public ActionResult<IEnumerable<ForumThread>> GetThreadList() {
+    	public ActionResult<IEnumerable<ThreadViewmodel>> GetThreadList() {
 		try {
 			var list = _thread.GetThreadList();
 			return Ok(list);
@@ -28,8 +28,6 @@ public class ThreadController : ControllerBase {
 			return StatusCode(500);
 		}
 	}
-
-
 
 	[HttpGet]
 	[Route("audit/{id}")]

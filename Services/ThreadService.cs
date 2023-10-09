@@ -13,8 +13,13 @@ public class ThreadService {
 		_auth = auth;
 	}
 
-	public List<ForumThread> GetThreadList() {
-		return _threadRepo.GetThreadList();
+	public List<ThreadViewmodel> GetThreadList() {
+		var threadsBackend = _threadRepo.GetThreadList();
+		List<ThreadViewmodel> threads = new List<ThreadViewmodel>();
+
+		threadsBackend.ForEach(t => threads.Add(new ThreadViewmodel(t)));
+
+		return threads;
 	}
 
 	public ForumThread GetThreadByID(int threadID) {
@@ -23,9 +28,14 @@ public class ThreadService {
 
 	public ThreadAuditResponse GetThreadAudit(int threadID, string auth) {
 		if (_auth.TokenIsAdmin(auth)) {
+			var auditsBackend = _threadRepo.GetThreadAudits(threadID);
+			List<ThreadAuditViewmodel> audits = new List<ThreadAuditViewmodel>();
+
+			auditsBackend.ForEach(a => audits.Add(new ThreadAuditViewmodel(a)));
+
 			return new ThreadAuditResponse{
-				thread = _threadRepo.GetThreadByID(threadID),
-				audits = _threadRepo.GetThreadAudits(threadID)
+				thread = new ThreadViewmodel(_threadRepo.GetThreadByID(threadID)),
+				audits = audits
 			};
 		}
 

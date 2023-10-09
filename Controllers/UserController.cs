@@ -39,7 +39,7 @@ public class UserController : ControllerBase {
 	}
 
 	[HttpGet]
-	public ActionResult<IEnumerable<ForumUser>> GetUserList() {
+	public ActionResult<IEnumerable<UserViewmodel>> GetUserList() {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
 			return BadRequest("No auth token provided");
@@ -58,10 +58,10 @@ public class UserController : ControllerBase {
 
 	[HttpGet]
 	[Route("{id}")]
-	public ActionResult<ForumUser> GetUser(int id) {
+	public ActionResult<UserViewmodel> GetUser(int id) {
 		
 		// TODO: Change to a front-end safe viewmodel
-		ForumUser res;
+		UserViewmodel res;
 
 		try {
 			res = _user.GetUser(id);
