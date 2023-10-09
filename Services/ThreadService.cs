@@ -2,13 +2,15 @@ public class ThreadService {
 	private readonly ILogger<ThreadService> _logger;
 	private ThreadRepository _threadRepo;
 	private UserRepository _userRepo;
+	private PostRepository _postRepo;
 	private ForumAuthenticator _auth;
 
-	public ThreadService(ILogger<ThreadService> logger, ThreadRepository threadRepo, UserRepository userRepo, ForumAuthenticator auth) {
+	public ThreadService(ILogger<ThreadService> logger, ThreadRepository threadRepo, UserRepository userRepo, PostRepository postRepo, ForumAuthenticator auth) {
 		_logger = logger;
 
 		_threadRepo = threadRepo;
 		_userRepo = userRepo;
+		_postRepo = postRepo;
 
 		_auth = auth;
 	}
@@ -57,15 +59,17 @@ public class ThreadService {
 					posts = new List<ForumPost>()
 				};
 
-				thread.posts.Add(new ForumPost{
+				// TODO: Move creation of thread/post objects to repo?
+				_threadRepo.PostThread(thread);
+
+				var op = new ForumPost{
 					date = thread.date,
 					text = text,
 					author = author,
 					thread = thread
-				});
+				};
 
-				// TODO: Move creation of thread/post objects to repo?
-				_threadRepo.PostThread(thread);
+				_postRepo.CreatePost(op);
 				return thread.threadID;
 			}
 		}
