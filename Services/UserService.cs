@@ -1,3 +1,5 @@
+using System.Security;
+
 public class UserService {
 	private readonly ILogger<UserService> _logger;
 
@@ -12,12 +14,10 @@ public class UserService {
 
 	public UserViewmodel GetUser(int userID) {
 
-		// TODO: Pack this into a viewmodel safe to return to the frontend
 		var user = _userRepo.GetUserByID(userID);
-
 		if (user == null) {
 			// TODO: Move this to the repo itself
-			throw new Exception("No user was found with the specified ID");
+			throw new KeyNotFoundException("No user was found with the specified ID");
 		}
 
 		return new UserViewmodel(user);
@@ -34,11 +34,16 @@ public class UserService {
 		}
 
 		else {
-			throw new Exception("Unauthorized");
+			throw new SecurityException("Unauthorized");
 		}
 	}
 
 	public UserAuditResponse GetUserAudit(int userID, string auth) {
+		var user = _userRepo.GetUserByID(userID);
+		if (user == null) {
+			throw new KeyNotFoundException();
+		}
+
 		if (_auth.TokenIsAdmin(auth)) {
 			var auditsBackend = _userRepo.GetUserAudits(userID);
 			List<UserAuditViewmodel> audits = new List<UserAuditViewmodel>();
@@ -46,20 +51,20 @@ public class UserService {
 			auditsBackend.ForEach(a => audits.Add(new UserAuditViewmodel(a)));
 
 			return new UserAuditResponse{
-				user = new UserViewmodel(_userRepo.GetUserByID(userID)),
+				user = new UserViewmodel(user),
 				audits = audits
 			};
 		}
 
 		else {
-			throw new Exception("Not authorized");
+			throw new SecurityException("Not authorized");
 		}
 	}
 
 	public void UpdateUserBio(int id, string? bio, string auth) {
 		var user_to_edit = _userRepo.GetUserByID(id);
 		if (user_to_edit == null) {
-			throw new Exception("No user found with the given userID");
+			throw new KeyNotFoundException("No user found with the given userID");
 		}
 
 		if (_auth.TokenIsUser(auth, id)) {
@@ -68,14 +73,14 @@ public class UserService {
 		}
 
 		else {
-			throw new Exception("Not Authorized");
+			throw new SecurityException("Not Authorized");
 		}
 	}
 
 	public void BanUser(int id, string? reason, string auth) {
 		var user = _userRepo.GetUserByID(id);
 		if (user == null) {
-			throw new Exception("No user found with the given userID");
+			throw new KeyNotFoundException("No user found with the given userID");
 		}
 
 		if (_auth.TokenIsAdmin(auth)) {
@@ -83,14 +88,14 @@ public class UserService {
 		}
 
 		else {
-			throw new Exception("Not authorized to ban user");
+			throw new SecurityException("Not authorized to ban user");
 		}
 	}
 
 	public void UnbanUser(int id, string auth) {
 		var user = _userRepo.GetUserByID(id);
 		if (user == null) {
-			throw new Exception("No user found with the given userID");
+			throw new KeyNotFoundException("No user found with the given userID");
 		}
 
 		if (_auth.TokenIsAdmin(auth)) {
@@ -98,8 +103,7 @@ public class UserService {
 		}
 
 		else {
-			// TODO: Separate out other exceptions
-			throw new Exception("Not authorized to unban user");
+			throw new SecurityException("Not authorized to unban user");
 		}
 	}
 }

@@ -1,3 +1,5 @@
+using System.Security;
+
 public class ThreadService {
 	private readonly ILogger<ThreadService> _logger;
 	private ThreadRepository _threadRepo;
@@ -25,10 +27,16 @@ public class ThreadService {
 	}
 
 	public ForumThread GetThreadByID(int threadID) {
+		// TODO: Pack a viewmodel with this instead of returning the backend model
 		return _threadRepo.GetThreadByID(threadID);
 	}
 
 	public ThreadAuditResponse GetThreadAudit(int threadID, string auth) {
+		var thread = _threadRepo.GetThreadByID(threadID);
+		if (thread == null) {
+			throw new KeyNotFoundException();
+		}
+
 		if (_auth.TokenIsAdmin(auth)) {
 			var auditsBackend = _threadRepo.GetThreadAudits(threadID);
 			List<ThreadAuditViewmodel> audits = new List<ThreadAuditViewmodel>();
@@ -36,13 +44,13 @@ public class ThreadService {
 			auditsBackend.ForEach(a => audits.Add(new ThreadAuditViewmodel(a)));
 
 			return new ThreadAuditResponse{
-				thread = new ThreadViewmodel(_threadRepo.GetThreadByID(threadID)),
+				thread = new ThreadViewmodel(thread),
 				audits = audits
 			};
 		}
 
 		else {
-			throw new Exception("Not authorized");
+			throw new SecurityException("Not authorized");
 		}
 	}
 
@@ -50,6 +58,9 @@ public class ThreadService {
 		int authorID;
 		if (_auth.VerifyBearerToken(auth, out authorID)) {
 			var author = _userRepo.GetUserByID(authorID);
+			if (author == null) {
+				throw new KeyNotFoundException("No user found for the given authorization");
+			}
 
 			if (author.userState >= userState.ACTIVE) {
 				var thread = new ForumThread{
@@ -58,7 +69,6 @@ public class ThreadService {
 					author = author,
 					posts = new List<ForumPost>()
 				};
-
 				// TODO: Move creation of thread/post objects to repo?
 				_threadRepo.PostThread(thread);
 
@@ -68,18 +78,21 @@ public class ThreadService {
 					author = author,
 					thread = thread
 				};
-
 				_postRepo.CreatePost(op);
+				
 				return thread.threadID;
 			}
 		}
 
 		// Should also cover falling out of the above if user is not active
-		throw new Exception("Not Authorized");
+		throw new SecurityException("Not Authorized");
 	}
 
 	public void DeleteThread(int threadID, string auth) {
 		var thread = _threadRepo.GetThreadByID(threadID);
+		if (thread == null) {
+			throw new KeyNotFoundException();
+		}
 
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, thread.author.userID)) {
 			// TODO: Make DeleteThread in the repo just take threadID?
@@ -87,12 +100,15 @@ public class ThreadService {
 		}
 
 		else {
-			throw new Exception("Not authorized");
+			throw new SecurityException("Not authorized");
 		}
 	}
 
 	public void EditThread(int threadID, string topic, string auth) {
 		var thread = GetThreadByID(threadID);
+		if (thread == null) {
+			throw new KeyNotFoundException();
+		}
 
 		// TODO: Do this in a cleaner way where the token isn't parsed twice
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, thread.author.userID)) {
@@ -101,7 +117,7 @@ public class ThreadService {
 		}
 
 		else {
-			throw new Exception("Not authorized");
+			throw new SecurityException("Not authorized");
 		}	
 	}
 }

@@ -1,3 +1,4 @@
+using System.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace asptest.Controllers;
@@ -32,10 +33,15 @@ public class AccountController : ControllerBase {
 			return Ok(res);
 		}
 
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate out server errors with exception types
 			_logger.LogError(e.Message);
-			return BadRequest();
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -53,10 +59,17 @@ public class AccountController : ControllerBase {
 		try {
 			_account.ResetPasswordByEmail(data.email);
 		}
-		catch {
-			// TODO: Add custom exception types to check if bad request
-			// Probably shouldn't announce if the email wasn't found for security reasons
-			return StatusCode(500);
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
+
+		catch (Exception e) {
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
 		// TODO: Wrap the message in an object to pull out of on the frontend?
@@ -84,6 +97,10 @@ public class AccountController : ControllerBase {
 		try {
 			_account.VerifyAndResetPassword(data.token, data.password);
 		}
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+
 		catch (Exception e) {
 			_logger.LogError(e.Message);
 			return StatusCode(StatusCodes.Status500InternalServerError);
@@ -119,10 +136,12 @@ public class AccountController : ControllerBase {
 			return Ok();
 		}
 
-		catch (Exception e) {
-			// TODO: Separate out exceptions
-			_logger.LogError(e.Message);
+		catch (ArgumentException e) {
 			return BadRequest();
+		}
+		catch (Exception e) {
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -142,10 +161,16 @@ public class AccountController : ControllerBase {
 			_account.ConfirmRegistration(data.token);
 			return Ok();	
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (ArgumentException e) {
+			return BadRequest();
+		}
 		catch (Exception e) {
-			// TODO: Separate out exceptions
 			_logger.LogError(e.Message);
-			return StatusCode(500);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 }

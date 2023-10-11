@@ -25,8 +25,8 @@ public class UserRepository {
 				.First();
 		}
 
-		catch {
-			// TODO: Something cleaner that explicitly says if there's nothing?
+		catch (Exception e) {
+			_logger.LogWarning(e, "Could not get user '{user}'", username);
 			return null;
 		}		
 	}
@@ -38,16 +38,24 @@ public class UserRepository {
 				.First();
 		}
 
-		catch {
-			// TODO: Something cleaner that explicitly says if there's nothing?
+		catch (Exception e) {
+			// TODO: Don't log email? Might be a bad idea
+			_logger.LogWarning(e, "Could not get user for email '{email}'", email);
 			return null;
 		}
 	}
 
-	public ForumUser GetUserByCode(string code) {
-		return _db.Users
-			.Where(u => u.code == code)
-			.First();
+	public ForumUser? GetUserByCode(string code) {
+		try {
+			return _db.Users
+				.Where(u => u.code == code)
+				.First();
+		}
+		catch (Exception e) {
+			_logger.LogWarning(e, "Could not get user for code '{code}'", code);
+			return null;
+		}
+
 	}
 
 	public List<ForumUserAudit> GetUserAudits(int id) {

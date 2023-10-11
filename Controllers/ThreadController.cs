@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-	
+using System.Security;
+
 namespace asptest.Controllers;
 
 [ApiController]
@@ -23,9 +24,10 @@ public class ThreadController : ControllerBase {
 			var list = _thread.GetThreadList();
 			return Ok(list);
 		}
+
 		catch (Exception e) {
 			_logger.LogError(e.Message);
-			return StatusCode(500);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -34,18 +36,24 @@ public class ThreadController : ControllerBase {
 	public ActionResult<ThreadAuditResponse> GetThreadAudit(int id) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			var res = _thread.GetThreadAudit(id, auth);
 			return Ok(res);
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
 			_logger.LogError(e.Message);
-			return StatusCode(500);
-		}	
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
 	}
 
 	[HttpGet]
@@ -55,10 +63,12 @@ public class ThreadController : ControllerBase {
 			return _thread.GetThreadByID(id);
 		}
 		
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
 			_logger.LogError(e.Message);
-			return StatusCode(500);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -68,17 +78,23 @@ public class ThreadController : ControllerBase {
 
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			_thread.DeleteThread(id, auth);
 			return Ok();
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exception
-			_logger.LogError("Error deleting thread: " + e.Message);
-			return StatusCode(500);
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -94,17 +110,23 @@ public class ThreadController : ControllerBase {
 		}
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			_thread.EditThread(id, data.topic, auth);
 			return Ok();
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exception
-			_logger.LogError("Error updating thread: " + e.Message);
-			return StatusCode(500);
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -122,7 +144,7 @@ public class ThreadController : ControllerBase {
 
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		if (string.IsNullOrWhiteSpace(data.topic)) {
@@ -140,9 +162,16 @@ public class ThreadController : ControllerBase {
 			// TODO: Actually return a thread object? Do in a clean way
 			return Created(baseURL + "thread/" + threadID, new ThreadCreateResult{threadID = threadID});
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);
-			return StatusCode(500);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	} 
 }

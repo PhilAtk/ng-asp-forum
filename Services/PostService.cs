@@ -1,3 +1,5 @@
+using System.Security;
+
 public class PostService {
 	private readonly ILogger<PostService> _logger;
 
@@ -18,19 +20,24 @@ public class PostService {
 
 	public PostAuditResponse GetPostAuditResponse(int postID, string auth) {
 		if (_auth.TokenIsAdmin(auth)) {
+			var post = _postRepo.GetPost(postID);
+			if (post == null) {
+				throw new KeyNotFoundException();
+			}
+
 			var auditsBackend = _postRepo.GetPostAudits(postID);
 
 			List<PostAuditViewmodel> audits = new List<PostAuditViewmodel>();
 			auditsBackend.ForEach(a => audits.Add(new PostAuditViewmodel(a)));
 
 			return new PostAuditResponse{
-				post = new PostViewmodel(_postRepo.GetPost(postID)),
+				post = new PostViewmodel(post),
 				audits = audits
 			};
 		}
 
 		else {
-			throw new Exception("Not authorized");
+			throw new SecurityException("Not authorized");
 		}
 	}
 
@@ -42,6 +49,9 @@ public class PostService {
 
 			if (author.userState >= userState.ACTIVE) {
 				var thread = _threadRepo.GetThreadByID(threadID);
+				if (thread == null) {
+					throw new KeyNotFoundException();
+				}
 
 				// TODO: Have the Repo method look up the thread?
 				var post = new ForumPost{
@@ -56,24 +66,31 @@ public class PostService {
 			}
 		}
 
-		throw new Exception("Not authorized");
+		throw new SecurityException("Not authorized");
 	}
 
 	public void DeletePost(int postID, string auth) {
 		var post = _postRepo.GetPost(postID);
+		if (post == null) {
+			throw new KeyNotFoundException();
+		}
 
+		// TODO: Do this in a cleaner way where the token isn't parsed twice
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, post.author.userID)) {
 			// TODO: Make DeletePost in the repo just take postID?
 			_postRepo.DeletePost(post);
 		}
 
 		else {
-			throw new Exception("Not authorized");
+			throw new SecurityException("Not authorized");
 		}
 	}
 
 	public void EditPost(int postID, string text, string auth) {
 		var post = _postRepo.GetPost(postID);
+		if (post == null){
+			throw new KeyNotFoundException();
+		}
 
 		// TODO: Do this in a cleaner way where the token isn't parsed twice
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, post.author.userID)) {
@@ -82,7 +99,7 @@ public class PostService {
 		}
 
 		else {
-			throw new Exception("Not authorized");
+			throw new SecurityException("Not authorized");
 		}	
 	}
 }

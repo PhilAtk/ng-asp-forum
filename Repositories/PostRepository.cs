@@ -51,7 +51,6 @@ public class PostRepository {
 	}
 
 	public List<ForumPostAudit> GetPostAudits(int id) {
-		// TODO: Make sure this lazy loads, don't want to load every post all at once
 		return _db.PostAudits
 			.Where(a => a.post.postID == id)
 			.OrderByDescending(a => a.date)

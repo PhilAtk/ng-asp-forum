@@ -1,3 +1,4 @@
+using System.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,18 +21,24 @@ public class PostController : ControllerBase {
 	public ActionResult<PostAuditResponse> GetPostAudit(int id) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			var res = _post.GetPostAuditResponse(id, auth);
 			return Ok(res);
 		}
+		
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
 			_logger.LogError(e.Message);
-			return StatusCode(500);
-		}	
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
 	}
 
 	[HttpDelete]
@@ -40,17 +47,23 @@ public class PostController : ControllerBase {
 
 		var auth = Request.Cookies["auth"];
 		if (auth == null) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			_post.DeletePost(id, auth);
 			return Ok();
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
-			_logger.LogError("Error deleting post: " + e.Message);
-			return StatusCode(500);
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -68,7 +81,7 @@ public class PostController : ControllerBase {
 
 		var auth = Request.Cookies["auth"];
 		if (auth == null) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
@@ -76,10 +89,15 @@ public class PostController : ControllerBase {
 			return Ok();
 		}
 		
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
-			_logger.LogError("Error updating post: " + e.Message);
-			return StatusCode(500);
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -97,7 +115,7 @@ public class PostController : ControllerBase {
 
 		var auth = Request.Cookies["auth"];
 		if (auth == null) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
@@ -106,9 +124,16 @@ public class PostController : ControllerBase {
 			var baseURL = Request.Scheme + "://" + Request.Host + '/';
 			return Created(baseURL + "thread/" + data.threadID + "#" + post.postID, post);
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
 			_logger.LogError(e.Message);
-			return StatusCode(500);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 }

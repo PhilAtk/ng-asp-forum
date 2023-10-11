@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ng_asp_forum.Migrations;
+using System.Security;
 
 namespace asptest.Controllers;
 
@@ -23,7 +24,7 @@ public class UserController : ControllerBase {
 	public ActionResult<UserAuditResponse> GetUserAudit(int id) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
@@ -31,28 +32,36 @@ public class UserController : ControllerBase {
 			return Ok(res);
 		}
 
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
 			_logger.LogError(e.Message);
-			return StatusCode(500);
-		}	
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
 	}
 
 	[HttpGet]
 	public ActionResult<IEnumerable<UserViewmodel>> GetUserList() {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			var userList = _user.GetUserList(auth);
 			return Ok(userList);
 		}
+
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate Exceptions
 			_logger.LogError(e.Message);
-			return StatusCode(500);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -65,13 +74,16 @@ public class UserController : ControllerBase {
 
 		try {
 			res = _user.GetUser(id);
-		}
-		catch {
-			// TODO: Separate out exceptions
-			return NotFound();
+			return Ok(res);
 		}
 
-		return res;
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (Exception e) {
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
 	}
 
 	public class UserEditData {
@@ -83,17 +95,23 @@ public class UserController : ControllerBase {
 	public ActionResult UpdateUserBio(int id, UserEditData data) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			_user.UpdateUserBio(id, data.bio, auth);
 			return Ok();
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
-			_logger.LogError("Error editing user: " + e.Message);
-			return StatusCode(500);
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -111,17 +129,23 @@ public class UserController : ControllerBase {
 	public ActionResult Ban(int id, BanData data) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			_user.BanUser(id, data.reason, auth);
 			return Ok();
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
-			_logger.LogError("Error banning user: " + e.Message);
-			return StatusCode(500);
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 
@@ -130,17 +154,23 @@ public class UserController : ControllerBase {
 	public ActionResult Unban(int id) {
 		var auth = Request.Cookies["auth"];
 		if (string.IsNullOrWhiteSpace(auth)) {
-			return BadRequest("No auth token provided");
+			return Unauthorized("No auth token provided");
 		}
 
 		try {
 			_user.UnbanUser(id, auth);
 			return Ok();
 		}
+
+		catch (KeyNotFoundException e) {
+			return NotFound();
+		}
+		catch (SecurityException e) {
+			return Unauthorized();
+		}
 		catch (Exception e) {
-			// TODO: Separate exceptions
-			_logger.LogError("Error unbanning user: " + e.Message);
-			return StatusCode(500);
+			_logger.LogError(e.Message);
+			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 	}
 }
