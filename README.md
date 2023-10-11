@@ -21,7 +21,6 @@ Before attempting to run, the following environment variables must be set:
 
     MYSQL_ROOT_PASSWORD # your_pass, if using the example connection string
     MYSQL_DATABASE # ef, if using the example connection string
-
 ```
 
 ## Building and Hosting
