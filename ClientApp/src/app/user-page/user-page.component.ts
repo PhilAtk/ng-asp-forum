@@ -49,7 +49,7 @@ export class UserPageComponent {
 		this._http.get<User>(this._baseUrl + URL_API_USER + this._user.userID).subscribe({
 			next: (u) => {
 				this._user = u;
-				if (this._auth.user.userID == this._user.userID || this._auth.user.userRole >= userRole.ADMIN) {
+				if (this._auth.user.userID == this._user.userID) {
 					this._canEdit = true;
 				}
 			},
