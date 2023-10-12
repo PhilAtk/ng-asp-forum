@@ -75,8 +75,7 @@ public class PostService {
 			throw new KeyNotFoundException();
 		}
 
-		// TODO: Do this in a cleaner way where the token isn't parsed twice
-		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, post.author.userID)) {
+		if (_auth.TokenIsAdminOrUser(auth, post.author.userID)) {
 			_postRepo.DeletePost(post);
 		}
 
@@ -91,8 +90,7 @@ public class PostService {
 			throw new KeyNotFoundException();
 		}
 
-		// TODO: Do this in a cleaner way where the token isn't parsed twice
-		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, post.author.userID)) {
+		if (_auth.TokenIsAdminOrUser(auth, post.author.userID)) {
 			_postRepo.EditPost(post, text);
 		}
 

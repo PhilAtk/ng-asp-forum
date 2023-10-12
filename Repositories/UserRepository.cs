@@ -39,8 +39,6 @@ public class UserRepository {
 		}
 
 		catch (Exception e) {
-			// TODO: Don't log email? Might be a bad idea
-			_logger.LogWarning(e, "Could not get user for email '{email}'", email);
 			return null;
 		}
 	}

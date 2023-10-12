@@ -107,7 +107,7 @@ public class ThreadService {
 			throw new KeyNotFoundException();
 		}
 
-		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, thread.author.userID)) {
+		if (_auth.TokenIsAdminOrUser(auth, thread.author.userID)) {
 			_threadRepo.DeleteThread(thread);
 		}
 
@@ -122,8 +122,7 @@ public class ThreadService {
 			throw new KeyNotFoundException();
 		}
 
-		// TODO: Do this in a cleaner way where the token isn't parsed twice
-		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, thread.author.userID)) {
+		if (_auth.TokenIsAdminOrUser(auth, thread.author.userID)) {
 			_threadRepo.EditThread(thread, topic);
 		}
 

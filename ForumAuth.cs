@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -105,12 +106,12 @@ public class ForumAuthenticator {
 	public bool TokenIsAdmin(string token) {
 		int authTokenUserID;
 		if (!VerifyBearerToken(token, out authTokenUserID)) {
-			throw new Exception("Bearer token is not valid");
+			throw new SecurityException("Bearer token is not valid");
 		}
 
 		var user = _userRepo.GetUserByID(authTokenUserID);
 		if (user == null) {
-			throw new Exception("No user found with the given auth credentials");
+			throw new KeyNotFoundException("No user found with the given auth credentials");
 		}
 
 		if (user.userRole >= userRole.ADMIN) {
@@ -122,16 +123,36 @@ public class ForumAuthenticator {
 
 	public bool TokenIsUser(string token, int userID) {
 
-		int tokenID;
-		VerifyBearerToken(token, out tokenID);
+		int authTokenUserID;
+		if (!VerifyBearerToken(token, out authTokenUserID)) {
+			throw new SecurityException("Bearer token is not valid");
+		}
 		
-		if (tokenID == userID) {
+		if (authTokenUserID == userID) {
 			return true;
 		}
 
 		else {
 			return false;
 		}
+	}
+
+	public bool TokenIsAdminOrUser(string token, int userID) {
+		int authTokenUserID;
+		if (!VerifyBearerToken(token, out authTokenUserID)) {
+			throw new Exception("Bearer token is not valid");
+		}
+
+		var user = _userRepo.GetUserByID(authTokenUserID);
+		if (user == null) {
+			throw new Exception("No user found with the given auth credentials");
+		}
+
+		if (user.userRole >= userRole.ADMIN || authTokenUserID == userID) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public string Hash(string input) {
