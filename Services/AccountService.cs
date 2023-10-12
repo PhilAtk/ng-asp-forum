@@ -20,8 +20,8 @@ public class AccountService {
 	public LoginResult Login(string username, string password) {
 		var user = _userRepo.GetUserByUsername(username);
 		if (user == null) {
-			// TODO: Don't announce this? Just say incorrect login?
-			throw new KeyNotFoundException();
+			// Don't announce what the issue is, prevents guessing user/password
+			throw new SecurityException();
 		}
 
 		if (string.IsNullOrWhiteSpace(user.password)) {
@@ -44,8 +44,8 @@ public class AccountService {
 
 					return res;
 				}
-				// TODO: Don't announce this? Just say incorrect login?
-				throw new SecurityException("Incorrect Password");
+				// Don't announce what the issue is, prevents guessing user/password
+				throw new SecurityException();
 
 			case userState.AWAIT_REG:
 				throw new SecurityException("Please confirm registration before logging in");
@@ -54,28 +54,20 @@ public class AccountService {
 			case userState.DISABLED:
 				throw new SecurityException("This account has been disabled");
 			default:
-				throw new SecurityException("Failed to log in");
+				throw new SecurityException();
 		}
 	}
 
 	public void ResetPasswordByEmail(string email) {
 		var user = _userRepo.GetUserByEmail(email);
 		if (user == null) {
-			// TODO: Simply log and return without throwing exception?
 			// We shouldn't announce whether there was an account or not
-			throw new KeyNotFoundException("No user found with the given email");
-		}
-
-		// Must have already registered, or not been banned
-		if (user.userState != userState.ACTIVE) {
-			// TODO: Is this actually something we should bother with? Maybe at least not banned?
-			throw new SecurityException("Please finish registration before requesting a password reset");
+			return;
 		}
 
 		// Generate a reset code
 		var resetCode = _auth.GetRandom6charCode();
 
-		// TODO: Have these methods throw exceptions themselves if things go wrong
 		_userRepo.SetUserCode(user, resetCode);
 		_email.sendPasswordReset(email, resetCode);
 	}
@@ -85,8 +77,7 @@ public class AccountService {
 		// Find the user for this code
 		var user = _userRepo.GetUserByCode(resetCode);
 		if (user == null) {
-			// TODO: Don't announce this?
-			throw new KeyNotFoundException("No user found awaiting reset");
+			throw new SecurityException("Invalid verification code");
 		}
 	
 		var hashedPass = _auth.Hash(newPassword);
@@ -96,7 +87,6 @@ public class AccountService {
 	public void RegisterUser(string username, string email, string password) {
 		var user = _userRepo.GetUserByUsername(username);
 		if (user != null) {
-			// TODO: Create exception type for username/email already used
 			throw new ArgumentException("Username already exists");
 		}
 

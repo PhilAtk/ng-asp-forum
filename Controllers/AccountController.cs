@@ -72,7 +72,6 @@ public class AccountController : ControllerBase {
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
-		// TODO: Wrap the message in an object to pull out of on the frontend?
 		return Ok();
 		
 	}
@@ -87,7 +86,7 @@ public class AccountController : ControllerBase {
 	public IActionResult VerifyPasswordReset(ResetData data) {
 
 		if (data.token == null ) {
-			return BadRequest("No token provided for password reset");
+			return BadRequest("No code provided for password reset");
 		}
 
 		if (data.password == null) {

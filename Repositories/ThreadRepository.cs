@@ -11,20 +11,16 @@ public class ThreadRepository {
 
 	public List<ForumThread> GetThreadList() {
 		return _db.Threads
-			.Include(t => t.posts)
 			.Include(t => t.author)
+			.Include(t => t.posts)
 			.OrderByDescending(t => t.posts.OrderByDescending(p => p.date).First())
 			.ToList();
 	}
 
 	public ForumThread GetThreadByID(int threadID) {
-		// TODO: Don't include posts and authors all the time? Make separate methods?
-		// TODO: Check if returning null? or just let an exception get thrown?
 		return _db.Threads
 			.Where(t => t.threadID == threadID)
 			.Include(t => t.author)
-			.Include(t => t.posts)
-			.ThenInclude(p => p.author)
 			.First();
 	}
 
@@ -34,6 +30,8 @@ public class ThreadRepository {
 			.OrderByDescending(a => a.date)
 			.ToList();
 	}
+
+	// TODO: Take threadID instead of a thread object for the following methods?
 
 	public void PostThread(ForumThread thread) {
 		var audit = new ForumThreadAudit {

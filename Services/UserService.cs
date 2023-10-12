@@ -16,7 +16,6 @@ public class UserService {
 
 		var user = _userRepo.GetUserByID(userID);
 		if (user == null) {
-			// TODO: Move this to the repo itself
 			throw new KeyNotFoundException("No user was found with the specified ID");
 		}
 
@@ -68,7 +67,6 @@ public class UserService {
 		}
 
 		if (_auth.TokenIsUser(auth, id)) {
-			// TODO: Pass ID to this, don't require getting a user first
 			_userRepo.SetUserBio(user_to_edit, bio);
 		}
 

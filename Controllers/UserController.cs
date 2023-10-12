@@ -68,8 +68,7 @@ public class UserController : ControllerBase {
 	[HttpGet]
 	[Route("{id}")]
 	public ActionResult<UserViewmodel> GetUser(int id) {
-		
-		// TODO: Change to a front-end safe viewmodel
+
 		UserViewmodel res;
 
 		try {

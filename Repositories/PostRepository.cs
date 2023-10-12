@@ -10,19 +10,6 @@ public class PostRepository {
 		_db = db;
 	}
 
-	// TODO: Require a threadID and look that up, instead of assuming post will have it set?
-	public void CreatePost(ForumPost post) {
-		var audit = new ForumPostAudit {
-			date = DateTime.Now,
-			post = post,
-			action = postAction.CREATE,
-		};
-		_db.Add(audit);
-
-		_db.Add(post);
-		_db.SaveChanges();
-	}
-
 	public ForumPost GetPost(int id) {
 		return _db.Posts
 			.Where(p => p.postID == id)
@@ -36,6 +23,27 @@ public class PostRepository {
 			.Include(p => p.author)
 			.OrderBy(p => p.postID)
 			.ToList();
+	}
+
+	public List<ForumPostAudit> GetPostAudits(int id) {
+		return _db.PostAudits
+			.Where(a => a.post.postID == id)
+			.OrderByDescending(a => a.date)
+			.ToList();
+	}
+
+	// TODO: Take PostID/ThreadID for the following methods, rather than the DB Model objects?
+
+	public void CreatePost(ForumPost post) {
+		var audit = new ForumPostAudit {
+			date = DateTime.Now,
+			post = post,
+			action = postAction.CREATE,
+		};
+		_db.Add(audit);
+
+		_db.Add(post);
+		_db.SaveChanges();
 	}
 
 	public void DeletePost(ForumPost post) {
@@ -58,10 +66,5 @@ public class PostRepository {
 		_db.SaveChanges();
 	}
 
-	public List<ForumPostAudit> GetPostAudits(int id) {
-		return _db.PostAudits
-			.Where(a => a.post.postID == id)
-			.OrderByDescending(a => a.date)
-			.ToList();
-	}
+
 }

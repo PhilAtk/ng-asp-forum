@@ -108,7 +108,6 @@ public class ThreadService {
 		}
 
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, thread.author.userID)) {
-			// TODO: Make DeleteThread in the repo just take threadID?
 			_threadRepo.DeleteThread(thread);
 		}
 
@@ -125,7 +124,6 @@ public class ThreadService {
 
 		// TODO: Do this in a cleaner way where the token isn't parsed twice
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, thread.author.userID)) {
-			// TODO: Make DeleteThread in the repo just take threadID?
 			_threadRepo.EditThread(thread, topic);
 		}
 

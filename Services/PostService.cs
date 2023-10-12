@@ -46,14 +46,13 @@ public class PostService {
 		if (_auth.VerifyBearerToken(auth, out authorID)) {
 
 			var author = _userRepo.GetUserByID(authorID);
-
 			if (author.userState >= userState.ACTIVE) {
+
 				var thread = _threadRepo.GetThreadByID(threadID);
 				if (thread == null) {
 					throw new KeyNotFoundException();
 				}
 
-				// TODO: Have the Repo method look up the thread?
 				var post = new ForumPost{
 					date = DateTime.Now,
 					author = author,
@@ -62,6 +61,7 @@ public class PostService {
 					edited = false
 				};
 				_postRepo.CreatePost(post);
+
 				return new PostViewmodel(post);
 			}
 		}
@@ -77,7 +77,6 @@ public class PostService {
 
 		// TODO: Do this in a cleaner way where the token isn't parsed twice
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, post.author.userID)) {
-			// TODO: Make DeletePost in the repo just take postID?
 			_postRepo.DeletePost(post);
 		}
 
@@ -94,7 +93,6 @@ public class PostService {
 
 		// TODO: Do this in a cleaner way where the token isn't parsed twice
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, post.author.userID)) {
-			// TODO: Make EditPost in the repo just take postID?
 			_postRepo.EditPost(post, text);
 		}
 
