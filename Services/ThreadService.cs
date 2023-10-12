@@ -26,9 +26,22 @@ public class ThreadService {
 		return threads;
 	}
 
-	public ForumThread GetThreadByID(int threadID) {
-		// TODO: Pack a viewmodel with this instead of returning the backend model
-		return _threadRepo.GetThreadByID(threadID);
+	public ThreadResponse GetThreadResponseByID(int threadID) {
+		var thread = _threadRepo.GetThreadByID(threadID);
+		if (thread == null) {
+			throw new KeyNotFoundException();
+		}
+		var posts = new List<PostViewmodel>();
+
+		var postsBackend = _postRepo.GetPostsByID(threadID);
+		postsBackend.ForEach(p => posts.Add(new PostViewmodel(p)));
+
+		var res = new ThreadResponse{
+			thread = new ThreadViewmodel(thread),
+			posts = posts
+		};
+
+		return res;
 	}
 
 	public ThreadAuditResponse GetThreadAudit(int threadID, string auth) {
@@ -105,7 +118,7 @@ public class ThreadService {
 	}
 
 	public void EditThread(int threadID, string topic, string auth) {
-		var thread = GetThreadByID(threadID);
+		var thread = _threadRepo.GetThreadByID(threadID);
 		if (thread == null) {
 			throw new KeyNotFoundException();
 		}
@@ -113,7 +126,7 @@ public class ThreadService {
 		// TODO: Do this in a cleaner way where the token isn't parsed twice
 		if (_auth.TokenIsAdmin(auth) || _auth.TokenIsUser(auth, thread.author.userID)) {
 			// TODO: Make DeleteThread in the repo just take threadID?
-			_threadRepo.EditThread(GetThreadByID(threadID), topic);
+			_threadRepo.EditThread(thread, topic);
 		}
 
 		else {

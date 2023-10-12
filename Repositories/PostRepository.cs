@@ -30,6 +30,14 @@ public class PostRepository {
 			.First();
 	}
 
+	public List<ForumPost> GetPostsByID(int threadID) {
+		return _db.Posts
+			.Where(p => p.thread.threadID == threadID)
+			.Include(p => p.author)
+			.OrderBy(p => p.postID)
+			.ToList();
+	}
+
 	public void DeletePost(ForumPost post) {
 		_db.Remove(post);
 		_db.SaveChanges();

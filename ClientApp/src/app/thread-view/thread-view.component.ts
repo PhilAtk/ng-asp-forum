@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Thread, userRole } from 'src/app/model';
+import { Post, Thread, ThreadResponse, userRole } from 'src/app/model';
 import { AuthService } from 'src/app/auth.service';
 import { URL_API_THREAD } from 'src/app/urls';
 
@@ -21,8 +21,9 @@ export class ThreadViewComponent {
 	_auth: AuthService;
 
 	thread = {
-		author : {},
+		author: {},
 	} as Thread;
+	posts: Post[] = [];
 
 	_canEdit: boolean;
 	_editMode: boolean;
@@ -49,9 +50,10 @@ export class ThreadViewComponent {
 	}
 
 	ngOnInit() {
-		this._http.get<Thread>(this._baseUrl + URL_API_THREAD + this.thread.threadID).subscribe({
-			next: (t) => {
-				this.thread = t;
+		this._http.get<ThreadResponse>(this._baseUrl + URL_API_THREAD + this.thread.threadID).subscribe({
+			next: (res) => {
+				this.thread = res.thread;
+				this.posts = res.posts;
 				if (this._auth.user.userID == this.thread.author.userID || this._auth.user.userRole >= userRole.ADMIN) {
 					this._canEdit = true;
 				}

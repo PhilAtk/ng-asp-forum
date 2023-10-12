@@ -41,7 +41,11 @@ export interface Thread {
 	dateModified: number,
 	edited: boolean,
 	topic: string,
-	posts?: Post[]
+}
+
+export interface ThreadResponse {
+	thread: Thread,
+	posts: Post[]
 }
 
 export enum threadAction {

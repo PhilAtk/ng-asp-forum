@@ -58,9 +58,10 @@ public class ThreadController : ControllerBase {
 
 	[HttpGet]
 	[Route("{id}")]
-	public ActionResult<ForumThread> GetThread(int id) {
+	public ActionResult<ThreadResponse> GetThread(int id) {
 		try {
-			return _thread.GetThreadByID(id);
+			var res = _thread.GetThreadResponseByID(id);
+			return res;
 		}
 		
 		catch (KeyNotFoundException e) {
