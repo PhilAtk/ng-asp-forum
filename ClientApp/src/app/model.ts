@@ -41,6 +41,7 @@ export interface Thread {
 	dateModified: number,
 	edited: boolean,
 	topic: string,
+	numPosts: number
 }
 
 export interface ThreadResponse {

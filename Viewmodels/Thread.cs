@@ -5,6 +5,7 @@ public class ThreadViewmodel {
 	public DateTime? dateModified {get; set;}
 	public bool edited {get; set;}
 	public string? topic {get; set;}
+	public int numPosts {get; set;}
 
 	public ThreadViewmodel(ForumThread thread) {
 		threadID = thread.threadID;
@@ -13,6 +14,7 @@ public class ThreadViewmodel {
 		dateModified = thread.dateModified;
 		edited = thread.edited;
 		topic = thread.topic;
+		numPosts = thread.posts.Count;
 	}
 }
 

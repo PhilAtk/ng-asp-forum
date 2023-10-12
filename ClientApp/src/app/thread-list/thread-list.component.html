@@ -8,6 +8,6 @@
 	<tr *ngFor="let thread of threads">
 		<td><a class="nav-link text-dark" [routerLink]="['/thread', thread.threadID]">{{thread.topic}}</a></td>
 		<td>{{thread.date}}</td>
-		<td>{{thread.posts?.length}}</td>
+		<td>{{thread.numPosts}}</td>
 	</tr>
 </table>
