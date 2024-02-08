@@ -72,11 +72,11 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "ng_asp_forum:build:production"
+              "buildTarget": "ng_asp_forum:build:production"
             },
             "development": {
-              "browserTarget": "ng_asp_forum:build:development",
-              "proxyConfig": "proxy.conf.js"
+              "proxyConfig": "proxy.conf.js",
+              "buildTarget": "ng_asp_forum:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -84,7 +84,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ng_asp_forum:build"
+            "buildTarget": "ng_asp_forum:build"
           }
         },
         "test": {
