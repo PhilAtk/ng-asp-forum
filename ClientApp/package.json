@@ -48,8 +48,8 @@
     "typescript": "^5.5.0"
   },
   "overrides": {
-    "autoprefixer": "10.4.5",
-    "webpack": "5.81.0"
+    "autoprefixer": "^10.4.5",
+    "webpack": "^5.81.0"
   },
   "optionalDependencies": {}
 }
