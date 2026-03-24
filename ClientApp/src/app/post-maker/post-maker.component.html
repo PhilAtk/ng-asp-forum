@@ -1,5 +1,7 @@
-<div *ngIf="_canPost">
-	<label for="postTextInput">Text: </label>
-	<input id="postTextInput" [(ngModel)]="data.text"><br>
-	<button (click)="sendPost()">Post</button>
-</div>
+@if (_canPost) {
+  <div>
+    <label for="postTextInput">Text: </label>
+    <input id="postTextInput" [(ngModel)]="data.text"><br>
+    <button (click)="sendPost()">Post</button>
+  </div>
+}

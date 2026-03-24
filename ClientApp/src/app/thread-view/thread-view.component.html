@@ -1,28 +1,37 @@
-<div *ngIf="_editMode; else readMode">
-	<input type="text" [(ngModel)]="editBuffer">
-	<button (click)="saveThread()">Save</button>
-	<button (click)="cancelEdit()">Cancel</button>
-</div>
+@if (_editMode) {
+  <div>
+    <input type="text" [(ngModel)]="editBuffer">
+    <button (click)="saveThread()">Save</button>
+    <button (click)="cancelEdit()">Cancel</button>
+  </div>
+} @else {
+  <h1>{{thread.topic}}</h1>
+}
 
-<ng-template #readMode>
-	<h1>{{thread.topic}}</h1>
-</ng-template>
-<span *ngIf="_admin">
-        <a [routerLink]="['/thread/audit', thread.threadID]">Audit</a>
-</span>
+@if (_admin) {
+  <span>
+    <a [routerLink]="['/thread/audit', thread.threadID]">Audit</a>
+  </span>
+}
 
-<span *ngIf="_canEdit && !_editMode">
-	<button (click)="editThread()">Edit</button>
-	<button (click)="deleteThread()">Delete</button>
-</span>
+@if (_canEdit && !_editMode) {
+  <span>
+    <button (click)="editThread()">Edit</button>
+    <button (click)="deleteThread()">Delete</button>
+  </span>
+}
 <h4>by {{thread.author.userName}} on {{thread.date}}</h4>
-<small *ngIf="thread.edited">Edited on {{thread.dateModified}}</small>
+@if (thread.edited) {
+  <small>Edited on {{thread.dateModified}}</small>
+}
 
 <table>
-	<style>tr {outline: solid black 1px;}</style>
-	<tr *ngFor="let post of posts">
-		<app-post [post]="post"></app-post>
-	</tr>
+  <style>tr {outline: solid black 1px;}</style>
+  @for (post of posts; track post) {
+    <tr>
+      <app-post [post]="post"></app-post>
+    </tr>
+  }
 </table>
 
 <app-post-maker></app-post-maker>

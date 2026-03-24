@@ -1,27 +1,34 @@
 <div>
-	<span id="{{post.postID}}"><a [routerLink]="['/user', post.author.userID]">{{post.author.userName}}</a> | <a [routerLink]="'.'" fragment="{{post.postID}}">#{{post.postID}}</a> | {{post.date}}</span>	
+  <span id="{{post.postID}}"><a [routerLink]="['/user', post.author.userID]">{{post.author.userName}}</a> | <a [routerLink]="'.'" fragment="{{post.postID}}">#{{post.postID}}</a> | {{post.date}}</span>
 
-	<span *ngIf="_canEdit && !_editMode">
-		<button (click)="editPost()">Edit</button>
-		<button (click)="deletePost()">Delete</button>
-	</span>
+  @if (_canEdit && !_editMode) {
+    <span>
+      <button (click)="editPost()">Edit</button>
+      <button (click)="deletePost()">Delete</button>
+    </span>
+  }
 </div>
 
-<span *ngIf="_admin">
-        <a [routerLink]="['/post/audit', post.postID]">Audit</a>
-</span>
-<div *ngIf="_editMode; else readMode">
-	<input type="text" [(ngModel)]="editBuffer">
-	<button (click)="savePost()">Save</button>
-	<button (click)="cancelEdit()">Cancel</button>
-</div>
+@if (_admin) {
+  <span>
+    <a [routerLink]="['/post/audit', post.postID]">Audit</a>
+  </span>
+}
+@if (_editMode) {
+  <div>
+    <input type="text" [(ngModel)]="editBuffer">
+    <button (click)="savePost()">Save</button>
+    <button (click)="cancelEdit()">Cancel</button>
+  </div>
+} @else {
+  <div>
+    <span>{{post.text}}</span>
+  </div>
+  @if (post.edited) {
+    <div style="outline: auto;">
+      Edited {{post.dateModified}}
+    </div>
+  }
+}
 
-<ng-template #readMode>
-	<div>
-		<span>{{post.text}}</span>
-	</div>
-	<div style="outline: auto;" *ngIf="post.edited">
-		Edited {{post.dateModified}}
-	</div>
-</ng-template>
 

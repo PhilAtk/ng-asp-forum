@@ -1,25 +1,30 @@
 <table>
-	<tr>
-		<th>ID#</th>
-		<th>Username</th>
-		<th>Status</th>
-		<th>Role</th>
-		<th>Actions</th>
-	</tr>
-	<tr *ngFor="let user of users; index as i">
-		<td>{{user.userID}}</td>
-		<td><a class="nav-link text-dark" [routerLink]="['/user', user.userID]">{{user.userName}}</a></td>
-		
-		<td>
-			<span class="{{stateMap.get(user.userState)}}">{{stateMap.get(user.userState)}}</span>
-		</td>
-		<td>
-			<span class="{{roleMap.get(user.userRole)}}">{{roleMap.get(user.userRole)}}</span>
-		</td>
-		<td>
-			<app-ban-button *ngIf="user.userState >= 0" [user]="user"></app-ban-button>
-			<app-unban-button *ngIf="user.userState == -2" [user]="user"></app-unban-button>
-			<a [routerLink]="['/user/audit', user.userID]">Audit</a>
-		</td>
-	</tr>
+  <tr>
+    <th>ID#</th>
+    <th>Username</th>
+    <th>Status</th>
+    <th>Role</th>
+    <th>Actions</th>
+  </tr>
+  @for (user of users; track user; let i = $index) {
+    <tr>
+      <td>{{user.userID}}</td>
+      <td><a class="nav-link text-dark" [routerLink]="['/user', user.userID]">{{user.userName}}</a></td>
+      <td>
+        <span class="{{stateMap.get(user.userState)}}">{{stateMap.get(user.userState)}}</span>
+      </td>
+      <td>
+        <span class="{{roleMap.get(user.userRole)}}">{{roleMap.get(user.userRole)}}</span>
+      </td>
+      <td>
+        @if (user.userState >= 0) {
+          <app-ban-button [user]="user"></app-ban-button>
+        }
+        @if (user.userState == -2) {
+          <app-unban-button [user]="user"></app-unban-button>
+        }
+        <a [routerLink]="['/user/audit', user.userID]">Audit</a>
+      </td>
+    </tr>
+  }
 </table>

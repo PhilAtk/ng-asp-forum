@@ -1,4 +1,6 @@
-<button title="Unban" (click)="prepareUnban()">🔓</button><span *ngIf="_editMode">
-	<button (click)="saveUnban()">Confirm</button>
-	<button (click)="cancelUnban()">Cancel</button>
+<button title="Unban" (click)="prepareUnban()">🔓</button>@if (_editMode) {
+<span>
+  <button (click)="saveUnban()">Confirm</button>
+  <button (click)="cancelUnban()">Cancel</button>
 </span>
+}
